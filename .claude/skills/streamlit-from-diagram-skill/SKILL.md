@@ -8,7 +8,7 @@ description: |
   2. Generate LOCALHOST FILES ONLY:
      - streamlit_app.py (main app)
      - pyproject.toml (uv dependencies)
-  3. Run linting (ruff check --fix && ruff format)
+  3. Run linting (ruff check streamlit_app.py --fix && ruff format streamlit_app.py)
   4. Start app locally (uv) in background
   5. ✅ LOCALHOST READY - App running at http://localhost:8501
   
@@ -130,7 +130,7 @@ This is the DEFAULT behavior. No visual validation unless explicitly requested.
 │         snowflake.yml, spcs/ folder (generated later on request)    │
 ├─────────────────────────────────────────────────────────────────────┤
 │  STEP 4: LINT & FORMAT (modern Python tooling)                      │
-│     └─► ruff check --fix . && ruff format .                         │
+│     └─► ruff check streamlit_app.py --fix && ruff format streamlit_app.py │
 ├─────────────────────────────────────────────────────────────────────┤
 │  STEP 5: START APP + FAST HEALTH CHECK (using uv)                   │
 │     └─► uv sync && uv run streamlit run streamlit_app.py &          │
@@ -191,7 +191,7 @@ Only run this when explicitly requested:
 │  │    • Outputs JSON with score and improvements               │    │
 │  │                                                             │    │
 │  │ b. IMPLEMENT: Apply improvements from JSON output           │    │
-│  │ c. LINT: ruff check --fix . && ruff format .                │    │
+│  │ c. LINT: ruff check streamlit_app.py --fix && ruff format streamlit_app.py │    │
 │  │ d. RESTART: Kill old process, start new                     │    │
 │  └─────────────────────────────────────────────────────────────┘    │
 │                                                                     │
@@ -506,29 +506,37 @@ Files created:
 
 ### Snowflake Dashboard Naming Convention
 
-**ALWAYS add timestamp suffix to Snowflake dashboard names for easy identification:**
+**ALWAYS add timestamp suffix to Snowflake dashboard names for easy identification.**
+
+**⚠️ CRITICAL: Use underscores, NOT hyphens — Snowflake identifiers don't allow hyphens.**
 
 ```
-Format: {APP_NAME}_{YYYY-MM-DD-HH-MM} ({Runtime})
+Format: {APP_NAME}_{YYYY_MM_DD_HH_MM} ({Runtime})
 
 Examples:
-- PROPERTY_DASHBOARD_2026-01-07-14-30 (Warehouse)
-- PROPERTY_DASHBOARD_2026-01-07-14-30 (Container)
-- PROPERTY_DASHBOARD_2026-01-07-14-30 (SPCS)
+✅ PROPERTY_DASHBOARD_2026_01_07_14_30 (Warehouse)
+✅ PROPERTY_DASHBOARD_2026_01_07_14_30 (Container)
+✅ PROPERTY_DASHBOARD_2026_01_07_14_30 (SPCS)
+❌ PROPERTY_DASHBOARD_2026-01-07-14-30 (INVALID - hyphens not allowed)
 ```
 
 **Generate timestamp at deployment time:**
 ```python
 from datetime import datetime
-timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M")
+timestamp = datetime.now().strftime("%Y_%m_%d_%H_%M")  # Underscores, not hyphens!
 app_name = f"PROPERTY_DASHBOARD_{timestamp}"
+```
+
+```bash
+# Shell alternative
+TIMESTAMP=$(date +%Y_%m_%d_%H_%M)  # Underscores, not hyphens!
 ```
 
 | Variant | Name Pattern | Title Pattern |
 |---------|--------------|---------------|
 | SiS Warehouse | `APP_NAME_{timestamp}` | `"App Title (Warehouse)"` |
 | SiS Container | `APP_NAME_{timestamp}` | `"App Title (Container)"` |
-| Raw SPCS | `app-name-{timestamp}` | `"App Title (SPCS)"` |
+| Raw SPCS | `app_name_{timestamp}` | `"App Title (SPCS)"` |
 
 ### Modern Python Tooling Commands
 
@@ -577,8 +585,10 @@ EOF
 uv sync
 
 # 2. Lint and auto-fix with ruff
-ruff check --fix .
-ruff format .
+# ⚠️ CRITICAL: Target only generated files - NEVER run on entire directory!
+# Running on "." will modify skill files in .claude/skills/ which breaks the skill
+ruff check streamlit_app.py --fix
+ruff format streamlit_app.py
 
 # 3. Type check with ty (optional but recommended)
 ty check streamlit_app.py
@@ -645,7 +655,7 @@ This command automatically:
 
 **Action 3:** Implement improvements listed in output
 - Edit streamlit_app.py to fix each issue
-- Run: `ruff check --fix . && ruff format .`
+- Run: `ruff check streamlit_app.py --fix && ruff format streamlit_app.py`
 
 **Action 4:** Proceed to next iteration (no early exit)
 - App auto-reloads on file save
@@ -822,8 +832,8 @@ Analyze this wireframe systematically:
 
 **As an expert developer, always run:**
 ```bash
-ruff check --fix .   # Fix linting issues
-ruff format .        # Format code
+ruff check streamlit_app.py --fix   # Fix linting issues
+ruff format streamlit_app.py        # Format code
 ty check streamlit_app.py  # Type check
 ```
 
@@ -1962,10 +1972,10 @@ Create all required files:
 
 ```bash
 # Lint and auto-fix
-ruff check --fix .
+ruff check streamlit_app.py --fix
 
 # Format code
-ruff format .
+ruff format streamlit_app.py
 
 # Type check (optional but recommended)
 ty check streamlit_app.py
@@ -2018,8 +2028,8 @@ for iteration in [1, 2, 3, 4, 5]:
         implement_improvement(improvement)
     
     # Step 6: Lint and format
-    run("ruff check --fix .")
-    run("ruff format .")
+    run("ruff check streamlit_app.py --fix")
+    run("ruff format streamlit_app.py")
     
     # Step 7: Restart app for next iteration
     restart_streamlit_app()  # uv run streamlit run ...
@@ -2039,7 +2049,7 @@ print("📋 Say 'deploy to snowflake' when ready to deploy to Snowflake.")
 3. **SCORE**: Calculate visual quality score (0-100)
 4. **LIST**: Identify improvements (always find at least one, even minor polish)
 5. **IMPLEMENT**: Apply the improvements to code
-6. **LINT**: Run `ruff check --fix .` and `ruff format .`
+6. **LINT**: Run `ruff check streamlit_app.py --fix` and `ruff format streamlit_app.py`
 7. **RESTART**: Restart app for next iteration
 
 **Output after EACH iteration:**
@@ -2153,8 +2163,8 @@ EOF
 **Step 8c: Deploy**
 
 ```bash
-# Generate timestamp for unique naming
-TIMESTAMP=$(date +%Y-%m-%d-%H-%M)
+# Generate timestamp for unique naming (underscores, not hyphens!)
+TIMESTAMP=$(date +%Y_%m_%d_%H_%M)
 
 # 1. SiS Warehouse (snow CLI)
 # Name in snowflake.yml should include timestamp and (Warehouse) in title
@@ -2712,7 +2722,7 @@ uv tool install ty          # Latest ty
 | Tool | Purpose | Auto-fix |
 |------|---------|----------|
 | **uv** | Package management | N/A |
-| **ruff** | Linting + formatting | `ruff check --fix && ruff format` |
+| **ruff** | Linting + formatting | `ruff check streamlit_app.py --fix && ruff format streamlit_app.py` |
 | **ty** | Type checking | Reports only |
 
 ## File Templates
@@ -2782,7 +2792,7 @@ entities:
   app_warehouse:
     type: streamlit
     identifier:
-      name: APP_NAME_2026-01-07-14-30  # Add timestamp suffix!
+      name: APP_NAME_2026_01_07_14_30  # Underscores, not hyphens!
     title: "App Title (Warehouse)"      # Add (Warehouse) suffix!
     query_warehouse: COMPUTE_WH
     main_file: streamlit_app.py
@@ -2831,8 +2841,8 @@ DOCKER_BUILDKIT=1 docker build --platform linux/amd64 -t app:latest .
 # Prune before push (reduces size)
 docker image prune -f
 
-# Tag with timestamp for versioning
-TIMESTAMP=$(date +%Y-%m-%d-%H-%M)
+# Tag with timestamp for versioning (underscores for Snowflake compatibility)
+TIMESTAMP=$(date +%Y_%m_%d_%H_%M)
 docker tag app:latest <registry>/app:${TIMESTAMP}
 ```
 
@@ -2848,11 +2858,11 @@ altair>=5.0
 
 ### spcs/spec.yaml
 ```yaml
-# Service name should include timestamp: app-name-2026-01-07-14-30
+# Service name should include timestamp: app_name_2026_01_07_14_30
 spec:
   containers:
     - name: streamlit
-      image: /DB/SCHEMA/REPO/app:latest  # Or use :YYYY-MM-DD-HH-MM tag
+      image: /DB/SCHEMA/REPO/app:latest  # Or use :YYYY_MM_DD_HH_MM tag
       readinessProbe:
         port: 8501
         path: /_stcore/health
@@ -3184,7 +3194,7 @@ uv run playwright install chromium
 │   │  │ 3. SCORE: Calculate 0-100 based on elements      │   │
 │   │  │ 4. LIST: Generate improvement recommendations    │   │
 │   │  │ 5. IMPLEMENT: Apply improvements to code         │   │
-│   │  │ 6. LINT: ruff check --fix && ruff format        │   │
+│   │  │ 6. LINT: ruff check streamlit_app.py --fix && ruff format streamlit_app.py        │   │
 │   │  │ 7. (App auto-reloads on file change)            │   │
 │   │  └──────────────────────────────────────────────────┘   │
 │   │                                                          │
@@ -3213,7 +3223,7 @@ Example for 3 iterations (with early exit):
 # Iteration 1
 python ~/.claude/skills/streamlit-snowflake-from-image/scripts/visual-validate.py . 1 --auto
 # → Implement improvements from output
-# → Run: ruff check --fix . && ruff format .
+# → Run: ruff check streamlit_app.py --fix && ruff format streamlit_app.py
 
 # Iteration 2
 python ~/.claude/skills/streamlit-snowflake-from-image/scripts/visual-validate.py . 2 --auto --early-exit 90
