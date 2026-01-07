@@ -253,9 +253,10 @@ This is the DEFAULT behavior. No visual validation unless explicitly requested.
 ✅ STOP HERE - Output localhost URL and wait for user
 ```
 
-**🚫 NEVER add these TODOs automatically:**
+**🚫 NEVER add these TODOs automatically (only after explicit deployment request):**
 ```
-❌ Configure Snowflake connection with PAT
+❌ Search for PAT token           ← ONLY after localhost works + user requests deploy
+❌ Configure Snowflake connection ← ONLY after localhost works + user requests deploy
 ❌ Generate deployment files (environment.yml, requirements.txt, snowflake.yml, spcs/)
 ❌ Deploy to SiS Warehouse
 ❌ Deploy to SiS Container
@@ -267,6 +268,28 @@ This is the DEFAULT behavior. No visual validation unless explicitly requested.
 - "deploy to sis" or "deploy to sis warehouse" → Add SiS Warehouse TODO only
 - "deploy to container" or "deploy to sis container" → Add SiS Container TODO only
 - "deploy to spcs" → Add SPCS TODO only
+
+**🔄 CORRECT SEQUENCE (PAT search happens LATE, not early):**
+```
+PHASE 1: LOCALHOST (always runs first)
+├── 1. Initialize project
+├── 2. Analyze wireframe
+├── 3. Generate streamlit_app.py + pyproject.toml
+├── 4. Lint with ruff
+├── 5. Start localhost + health check
+├── 6. Git commit
+└── 7. ✅ OUTPUT: "Localhost ready at http://localhost:8501"
+        🛑 STOP HERE - Wait for user
+
+── user explicitly says "deploy to snowflake" ──
+
+PHASE 2: SNOWFLAKE DEPLOYMENT (only on explicit request)
+├── 8. 🔐 NOW search for PAT token (not earlier!)
+├── 9. Configure snow CLI connection
+├── 10. Test connection
+├── 11. Generate deployment files
+└── 12. Deploy to requested environments
+```
 
 **⚠️ User mentioning environments in prompt ≠ deployment request:**
 ```
@@ -319,6 +342,17 @@ Only run this when explicitly requested:
 
 **🔴 ONLY triggered when user EXPLICITLY requests deployment.**
 
+**⚠️ PRE-CONDITION: LOCALHOST MUST BE WORKING FIRST**
+```
+Before starting ANY Snowflake deployment:
+✅ streamlit_app.py exists and works
+✅ App is running at http://localhost:8501
+✅ User has reviewed the local app
+✅ User EXPLICITLY said "deploy to snowflake/sis/spcs"
+
+If localhost is not working → FIX IT FIRST before any Snowflake steps
+```
+
 **Trigger phrases:**
 - "deploy to snowflake" → Deploy to all 3 Snowflake environments
 - "deploy to sis warehouse" → Deploy to SiS Warehouse only
@@ -330,8 +364,10 @@ Only run this when explicitly requested:
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │  SNOWFLAKE DEPLOYMENT (ONLY WHEN USER EXPLICITLY REQUESTS)           │
+│                                                                      │
+│  ⚠️ PRE-CONDITION: Localhost MUST be working before this runs!      │
 ├─────────────────────────────────────────────────────────────────────┤
-│  STEP 1: VALIDATE PAT TOKEN IN .env (MANDATORY)                      │
+│  STEP 1: VALIDATE PAT TOKEN (only now, after localhost works)        │
 │      ┌─────────────────────────────────────────────────────────┐    │
 │      │ Check .env file exists and contains PAT token:          │    │
 │      │                                                          │    │
@@ -451,9 +487,15 @@ chmod 600 ~/.snowflake/.snowflake-token
 cat ~/.snowflake/.snowflake-token  # NEVER DO THIS
 ```
 
-**Auto-Discovery: Find PAT Token:**
+**Auto-Discovery: Find PAT Token (ONLY after user requests deployment):**
 
 ```bash
+# ⚠️ RUN THIS ONLY WHEN:
+#    1. Localhost is working (http://localhost:8501 responds)
+#    2. User explicitly said "deploy to snowflake/sis/spcs"
+#
+# DO NOT run this during initial localhost setup!
+
 # Search common locations for .env with PAT token
 for path in ".env" "../.env" "../../.env" "$HOME/.env" "$HOME/.snowflake/.env"; do
   if [ -f "$path" ] && grep -qE "^SNOWFLAKE_PAT=" "$path" 2>/dev/null; then
