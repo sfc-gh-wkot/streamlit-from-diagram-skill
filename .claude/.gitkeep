@@ -1,0 +1,2 @@
+# This file ensures the .claude directory is tracked by git.
+# The skills in .claude/skills/ are project-level Claude Code skills.

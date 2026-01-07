@@ -1,0 +1,86 @@
+# ============================================================
+# 🔐 CREDENTIALS - NEVER COMMIT THESE (CRITICAL)
+# ============================================================
+
+# Environment variables (Snowflake PAT tokens, API keys, etc.)
+.env
+.env.*
+*.env
+.env.local
+.env.*.local
+
+# Snowflake credentials
+.snowflake-token
+*.token
+*.pat
+.snowflake/
+!.snowflake/.gitkeep
+
+# Streamlit secrets
+.streamlit/secrets.toml
+secrets.toml
+
+# Service account credentials
+**/credentials.json
+**/service_account*.json
+
+# Private keys and certificates
+private_key*.pem
+*.p8
+*.p12
+*.key
+*.pem
+
+# ============================================================
+# Python
+# ============================================================
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# uv lock file (regenerated from pyproject.toml)
+uv.lock
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# ============================================================
+# IDE / Editor
+# ============================================================
+
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# ============================================================
+# Project-specific
+# ============================================================
+
+# Screenshots from visual validation (generated)
+.screenshot_iter_*.png
+screenshot*.png
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/
+
+# ============================================================
+# NOTE: .claude/ directory IS tracked (contains the skill)
+# ============================================================
+# The .claude/skills/ directory contains the project skill
+# and MUST be committed to the repository.
