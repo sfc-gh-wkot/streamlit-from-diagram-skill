@@ -1,0 +1,16 @@
+# Snowflake CLI Project Definition
+# Deploy with: snow streamlit deploy app_name_warehouse --connection <conn> --replace
+
+definition_version: 2
+
+entities:
+  app_name_warehouse:
+    type: streamlit
+    identifier:
+      name: APP_NAME
+    title: "App Title (Warehouse)"
+    query_warehouse: COMPUTE_WH
+    main_file: streamlit_app.py
+    artifacts:
+      - streamlit_app.py
+      - environment.yml

@@ -1,0 +1,10 @@
+# SiS Container Runtime (Preview as of Dec 2025)
+#
+# References:
+# - SiS Limitations: https://docs.snowflake.com/en/developer-guide/streamlit/limitations
+# - Container Runtime: https://docs.snowflake.com/en/release-notes/streamlit-in-snowflake
+
+streamlit>=1.51
+pandas
+numpy
+altair

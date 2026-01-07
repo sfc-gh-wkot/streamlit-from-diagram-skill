@@ -1,0 +1,9 @@
+# Raw SPCS Container Dependencies
+# Full control - can use latest PyPI versions
+#
+# Reference: https://pypi.org/project/streamlit/
+
+streamlit>=1.51
+pandas
+numpy
+altair>=5.0
