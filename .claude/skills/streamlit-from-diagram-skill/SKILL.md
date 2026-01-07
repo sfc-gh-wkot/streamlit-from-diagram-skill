@@ -204,6 +204,11 @@ This is the DEFAULT behavior. No visual validation unless explicitly requested.
 │  STEP 4: LINT & FORMAT (modern Python tooling)                      │
 │     └─► ruff check streamlit_app.py --fix && ruff format streamlit_app.py │
 ├─────────────────────────────────────────────────────────────────────┤
+│  STEP 4.5: SPACING/ALIGNMENT VALIDATION (fast, code-based)          │
+│     └─► Review code for common spacing antipatterns (see checklist) │
+│     └─► Fix issues in-place before starting the app                 │
+│     └─► No external tools needed - just code review + edit          │
+├─────────────────────────────────────────────────────────────────────┤
 │  STEP 5: START APP + FAST HEALTH CHECK (using uv)                   │
 │     └─► uv sync && uv run streamlit run streamlit_app.py &          │
 │     └─► Fast health check loop (3-5s):                              │
@@ -248,6 +253,7 @@ This is the DEFAULT behavior. No visual validation unless explicitly requested.
 ☐ Analyze wireframe and generate streamlit_app.py
 ☐ Generate pyproject.toml for localhost
 ☐ Lint and format with ruff
+☐ Validate spacing/alignment (code review + fix)
 ☐ Start localhost and verify health
 ☐ Initial git commit
 ✅ STOP HERE - Output localhost URL and wait for user
@@ -625,6 +631,156 @@ html_content = st.markdown(
 - Use smaller base image (`python:3.11-slim` not `3.13-slim`)
 - Order Dockerfile for layer caching (deps before code)
 - Consider `--squash` flag if available
+
+---
+
+### 📐 SPACING/ALIGNMENT VALIDATION (Step 4.5)
+
+**Fast, code-based validation run BEFORE starting the app.** No external tools needed.
+
+**⚠️ COMMON ISSUES TO CHECK AND FIX:**
+
+#### 1. Sidebar Text Truncation (CRITICAL)
+```python
+# ❌ WRONG - Long text in sidebar gets cut off
+with st.sidebar:
+    st.markdown("Projected Q1 revenue based on current occupancy rates")
+    st.markdown("Properties below 70% occupancy threshold this month")
+
+# ✅ CORRECT - Use shorter text OR word wrapping
+with st.sidebar:
+    st.markdown("**Q1 Revenue Projection**")  # Short header
+    st.caption("Based on current occupancy")   # Use caption for details
+
+    # OR use CSS word-wrap for long text
+    st.markdown("""
+        <style>.sidebar-text { word-wrap: break-word; }</style>
+        <div class="sidebar-text">Projected Q1 revenue based on occupancy</div>
+    """, unsafe_allow_html=True)
+```
+
+#### 2. Sidebar Width Issues
+```python
+# ❌ WRONG - Default sidebar may be too narrow for content
+with st.sidebar:
+    st.metric("Revenue Forecast", "$47,200", "13% vs last quarter")
+
+# ✅ CORRECT - Expand sidebar OR simplify content
+st.set_page_config(layout="wide")  # Gives more sidebar space
+
+# OR use stacked layout instead of side-by-side
+with st.sidebar:
+    st.markdown("**Revenue Forecast**")
+    st.markdown("$47,200 projected")
+    st.caption("↑13% vs last quarter")
+```
+
+#### 3. Icon + Text Alignment in Sidebar
+```python
+# ❌ WRONG - Icons and text can overlap
+with st.sidebar:
+    st.markdown("📊 Insights")
+    st.markdown("📈 Revenue Forecast")
+
+# ✅ CORRECT - Use consistent spacing with containers
+with st.sidebar:
+    st.markdown("#### 📊 Insights")  # Header styling
+    st.divider()
+
+    # Use expanders for icon+text groups
+    with st.expander("📈 Revenue Forecast", expanded=True):
+        st.caption("$47,200 projected")
+```
+
+#### 4. Column Width Imbalance
+```python
+# ❌ WRONG - Uneven columns cause alignment issues
+col1, col2, col3, col4 = st.columns(4)  # Equal width but content varies
+
+# ✅ CORRECT - Use weighted columns based on content
+col1, col2, col3, col4 = st.columns([1.2, 1, 1, 1.2])  # Adjust for content
+
+# OR use gap parameter for consistent spacing
+col1, col2, col3, col4 = st.columns(4, gap="medium")
+```
+
+#### 5. Metric Cards Overflow
+```python
+# ❌ WRONG - Long labels/values overflow containers
+st.metric("Total Revenue Year-to-Date", "$1,234,567.89", "+12.5% increase")
+
+# ✅ CORRECT - Use abbreviated formats
+st.metric("Total Revenue", "$1.24M", "↑12.5%")
+
+# For multiple metrics, ensure consistent label lengths
+col1, col2, col3, col4 = st.columns(4)
+with col1:
+    st.metric("Revenue", "$1.24M", "↑12.5%")
+with col2:
+    st.metric("Occupancy", "87.3%", "↑3.2%")
+```
+
+#### 6. Charts Without Container Width
+```python
+# ❌ WRONG - Chart may not fill container properly
+st.altair_chart(chart)
+
+# ✅ CORRECT - Always use container width for responsive charts
+st.altair_chart(chart, use_container_width=True)
+st.plotly_chart(fig, use_container_width=True)
+```
+
+#### 7. Text Cutoff in Narrow Containers
+```python
+# ❌ WRONG - Long text in columns gets cut off
+col1, col2 = st.columns([1, 3])
+with col1:
+    st.markdown("Preventive maintenance reduced emergency repairs by 14%")
+
+# ✅ CORRECT - Wrap text or use full width for long content
+col1, col2 = st.columns([1, 3])
+with col1:
+    st.markdown("**Maintenance**")
+    st.caption("↓14% repairs")
+
+# OR put long text in the wider column
+with col2:
+    st.info("Preventive maintenance reduced emergency repairs by 14%")
+```
+
+#### 8. Button/Input Width in Sidebar
+```python
+# ❌ WRONG - Buttons may not fit well in sidebar
+with st.sidebar:
+    st.button("View Forecast Details and Analytics")
+
+# ✅ CORRECT - Use shorter labels or full-width buttons
+with st.sidebar:
+    st.button("View Details", use_container_width=True)
+```
+
+**🔍 VALIDATION CHECKLIST (run mentally before starting app):**
+
+```
+□ Sidebar text: All text fits without truncation?
+□ Sidebar icons: Properly aligned with text (use headers/expanders)?
+□ Columns: Weighted appropriately for content?
+□ Metrics: Labels and values are abbreviated/concise?
+□ Charts: All have use_container_width=True?
+□ Buttons: Have use_container_width=True in sidebar?
+□ Long text: In wide containers or using word-wrap CSS?
+```
+
+**🔧 QUICK FIXES TO APPLY:**
+
+1. **Add to ALL charts:** `use_container_width=True`
+2. **Add to sidebar buttons:** `use_container_width=True`
+3. **Shorten metric labels:** "Total Revenue YTD" → "Revenue"
+4. **Use abbreviations:** "$1,234,567" → "$1.24M"
+5. **Replace long sidebar text with:**
+   - Headers (`####`) + captions
+   - Expanders for grouped content
+   - CSS word-wrap for unavoidable long text
 
 ---
 
