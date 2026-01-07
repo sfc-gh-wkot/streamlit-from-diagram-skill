@@ -3076,6 +3076,37 @@ snow sql -c <conn> -q "SHOW ENDPOINTS IN SERVICE DB.SCHEMA.MY_SERVICE;"
 # After 2-5 min: Returns actual URL like "mchrhd-xxx.snowflakecomputing.app"
 ```
 
+### SPCS Troubleshooting: "No service hosts found"
+
+**If browser shows:** `{"responseType":"ERROR","detail":"Service X not reachable: no service hosts found."}`
+
+**This means the service isn't ready yet. Diagnose with:**
+
+```sql
+-- 1. Check service status (should be READY, not PENDING/STARTING)
+SHOW SERVICES LIKE '%MY_SERVICE%';
+
+-- 2. Check container logs for crashes
+SELECT * FROM TABLE(GET_SERVICE_LOGS('MY_SERVICE', 'streamlit'))
+ORDER BY timestamp DESC LIMIT 50;
+
+-- 3. Check compute pool is running (not SUSPENDED)
+SHOW COMPUTE POOLS;
+
+-- 4. Check endpoint provisioning
+SHOW ENDPOINTS IN SERVICE MY_SERVICE;
+```
+
+**Common causes:**
+| Cause | Solution |
+|-------|----------|
+| Service still starting | Wait 2-5 min for compute pool + container |
+| Container crashed | Check logs for Python errors |
+| Compute pool suspended | `ALTER COMPUTE POOL MY_POOL RESUME;` |
+| Endpoint provisioning | Wait 2-5 min after service starts |
+
+**See `references/troubleshooting.md` for detailed diagnosis steps.**
+
 ## Complete CSS Template (Reference)
 
 Include this comprehensive CSS in every generated dashboard:

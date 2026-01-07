@@ -102,6 +102,69 @@ st.dataframe(df)
 
 ### Raw SPCS Issues
 
+#### Issue: "No service hosts found" error
+
+**Symptom:** Browser shows JSON error:
+```json
+{"responseType":"ERROR","detail":"Service MY_SERVICE not reachable: no service hosts found."}
+```
+
+**Causes (in order of likelihood):**
+1. **Service still starting** — Compute pool provisioning + container pull takes 2-5 minutes
+2. **Container crashed** — App failed to start (check logs)
+3. **Readiness probe failing** — Health check endpoint not responding
+4. **Compute pool suspended** — No nodes available
+
+**Diagnosis:**
+```sql
+-- 1. Check service status (look for READY status)
+SHOW SERVICES LIKE '%MY_SERVICE%';
+
+-- 2. Check if container is running
+DESCRIBE SERVICE MY_SERVICE;
+
+-- 3. Check compute pool has nodes
+SHOW COMPUTE POOLS;
+DESCRIBE COMPUTE POOL MY_POOL;  -- Check MIN_NODES > 0
+
+-- 4. Check container logs for crash
+SELECT * FROM TABLE(GET_SERVICE_LOGS('MY_SERVICE', 'streamlit'))
+ORDER BY timestamp DESC LIMIT 50;
+
+-- 5. Check endpoint provisioning status
+SHOW ENDPOINTS IN SERVICE MY_SERVICE;
+```
+
+**Solutions:**
+
+**If service is PENDING/STARTING:** Wait 2-5 minutes for compute pool to provision nodes.
+
+**If container crashed:** Check logs for Python errors:
+```sql
+SELECT * FROM TABLE(GET_SERVICE_LOGS('MY_SERVICE', 'streamlit'));
+```
+Common causes: missing dependencies, syntax errors, port binding issues.
+
+**If compute pool suspended:**
+```sql
+ALTER COMPUTE POOL MY_POOL RESUME;
+```
+
+**If readiness probe failing:** Ensure your app exposes `/_stcore/health`:
+```yaml
+readinessProbe:
+  port: 8501
+  path: /_stcore/health
+```
+
+**If endpoint still provisioning:** Public endpoints take 2-5 minutes after service starts:
+```sql
+-- Poll until URL appears (not "Endpoints provisioning in progress...")
+SHOW ENDPOINTS IN SERVICE MY_SERVICE;
+```
+
+---
+
 #### Issue: Docker login fails with MFA
 
 **Symptom:** `MFA authentication is required`
