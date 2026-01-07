@@ -311,6 +311,18 @@ chmod 600 ~/.snowflake/.snowflake-token
 cat ~/.snowflake/.snowflake-token  # NEVER DO THIS
 ```
 
+**Extracting PAT from .env to .snowflake-token:**
+
+```bash
+# ✅ SAFE - Extract without displaying token content
+grep -E "^(SNOWFLAKE_TOKEN|PAT_TOKEN|SNOWFLAKE_PAT)=" .env \
+  | head -1 | cut -d'=' -f2- > .snowflake-token
+chmod 600 .snowflake-token
+
+# Verify (size only, not content)
+echo "Token file: $(wc -c < .snowflake-token) bytes"
+```
+
 **Verify .gitignore Before Deployment:**
 
 ```bash
@@ -2859,6 +2871,11 @@ altair>=5.0
 ```
 
 ### spcs/spec.yaml
+
+**⚠️ NOTE:** This file is for **reference/documentation only**. When creating the service,
+you must **inline the spec** in SQL. `snow spcs service create --spec-path` requires staging
+the file first — inlining is simpler for single-file specs.
+
 ```yaml
 # Service name should include timestamp: app_name_2026_01_07_14_30
 spec:
@@ -2879,6 +2896,44 @@ spec:
     - name: streamlit
       port: 8501
       public: true
+```
+
+**Inline the spec in SQL:**
+```sql
+CREATE SERVICE DB.SCHEMA.MY_SERVICE_2026_01_07_14_30
+  IN COMPUTE POOL MY_COMPUTE_POOL
+  FROM SPECIFICATION $$
+spec:
+  containers:
+    - name: streamlit
+      image: /DB/SCHEMA/REPO/app:2026_01_07_14_30
+      readinessProbe:
+        port: 8501
+        path: /_stcore/health
+      resources:
+        requests:
+          memory: 1Gi
+          cpu: 0.5
+        limits:
+          memory: 2Gi
+          cpu: 1
+  endpoints:
+    - name: streamlit
+      port: 8501
+      public: true
+$$;
+```
+
+### SPCS Endpoint Provisioning
+
+After `CREATE SERVICE`, the container starts immediately but the **public endpoint takes 2-5 minutes** to provision:
+
+```bash
+# Check endpoint status (poll until URL appears)
+snow sql -c <conn> -q "SHOW ENDPOINTS IN SERVICE DB.SCHEMA.MY_SERVICE;"
+
+# Initially shows: "Endpoints provisioning in progress..."
+# After 2-5 min: Returns actual URL like "mchrhd-xxx.snowflakecomputing.app"
 ```
 
 ## Complete CSS Template (Reference)
