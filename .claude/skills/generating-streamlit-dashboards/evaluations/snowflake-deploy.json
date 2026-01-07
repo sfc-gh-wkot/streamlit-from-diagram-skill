@@ -1,0 +1,58 @@
+{
+  "name": "snowflake-deploy",
+  "description": "Tests Phase 3 Snowflake deployment",
+  "grading": {
+    "pass_threshold": 1.0,
+    "partial_pass_threshold": 0.7,
+    "critical_behaviors": [
+      "Searches for PAT token only NOW (not earlier)",
+      "Never echoes or displays token content",
+      "Does NOT trigger deployment (this describes capability, not request)"
+    ],
+    "scoring": {
+      "pass": "All expected behaviors observed",
+      "partial": ">=70% behaviors observed, all critical behaviors pass",
+      "fail": "Any critical behavior missing OR <70% behaviors observed"
+    }
+  },
+  "scenarios": [
+    {
+      "id": "deploy-1",
+      "query": "deploy to snowflake",
+      "precondition": "Localhost app already running, .env with SNOWFLAKE_PAT exists",
+      "expected_behavior": [
+        "Verifies localhost is working first",
+        "Searches for PAT token only NOW (not earlier)",
+        "Never echoes or displays token content",
+        "Configures snow CLI connection",
+        "Tests connection before deploying",
+        "Generates environment.yml WITHOUT version specifiers",
+        "Generates requirements.txt for SiS Container",
+        "Uses SYSTEM_COMPUTE_POOL_CPU for SiS Container",
+        "Uses underscore naming convention (not hyphens)",
+        "Commits deployment files to git",
+        "Outputs URLs for all deployed environments"
+      ]
+    },
+    {
+      "id": "deploy-2",
+      "query": "This app can be deployed to SiS, SPCS, or localhost",
+      "precondition": "Localhost app running",
+      "expected_behavior": [
+        "Does NOT trigger deployment (this describes capability, not request)",
+        "Waits for explicit deployment command"
+      ]
+    },
+    {
+      "id": "deploy-3",
+      "query": "deploy to spcs only",
+      "precondition": "Localhost app running",
+      "expected_behavior": [
+        "Only generates SPCS-related files (Dockerfile, spec.yaml)",
+        "Does NOT generate environment.yml (SiS Warehouse)",
+        "Builds Docker image with --platform linux/amd64",
+        "Uses custom compute pool (not SYSTEM_COMPUTE_POOL_CPU)"
+      ]
+    }
+  ]
+}

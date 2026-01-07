@@ -1,0 +1,27 @@
+<!--
+  Right Tiles Panel HTML Template
+  
+  Usage in streamlit_app.py:
+    st.markdown('''
+      <style>/* tiles-panel.css content */</style>
+      <!-- tiles-panel.html content -->
+    ''', unsafe_allow_html=True)
+  
+  Note: Uses CSS :hover for expand/collapse.
+  JavaScript won't work in st.markdown (stripped for security).
+  
+  Customize icons and titles as needed.
+-->
+
+<div class="tiles-panel" id="tiles-panel">
+    <div class="tiles-collapse" title="Hover to expand">‹</div>
+    <div class="tiles-content">
+        <div class="tiles-tab-label">Tiles</div>
+        <div class="tiles-icons">
+            <div class="tiles-icon" title="Chart View">📊</div>
+            <div class="tiles-icon" title="Table View">📋</div>
+            <div class="tiles-icon" title="Map View">🗺️</div>
+            <div class="tiles-icon" title="Settings">⚙️</div>
+        </div>
+    </div>
+</div>

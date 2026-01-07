@@ -1,0 +1,34 @@
+<!--
+  Top Navigation Bar HTML Template
+  
+  Usage in streamlit_app.py:
+    st.markdown('''
+      <style>/* top-navbar.css content */</style>
+      <!-- top-navbar.html content -->
+    ''', unsafe_allow_html=True)
+  
+  Customize company name, profile, etc. as needed.
+-->
+
+<div class="top-navbar">
+    <div class="navbar-left">
+        <div class="navbar-logo">COMPANY</div>
+        <div class="navbar-title">Dashboard</div>
+    </div>
+    
+    <div class="navbar-center">
+        <input type="text" class="navbar-search" placeholder="Search...">
+    </div>
+    
+    <div class="navbar-right">
+        <div class="navbar-action" title="Notifications">🔔</div>
+        <div class="navbar-action" title="Help">❓</div>
+        <div class="navbar-profile">
+            <div class="navbar-avatar">JD</div>
+            <span class="navbar-username">John Doe</span>
+        </div>
+    </div>
+</div>
+
+<!-- Spacer to push content below fixed navbar -->
+<div class="navbar-spacer"></div>

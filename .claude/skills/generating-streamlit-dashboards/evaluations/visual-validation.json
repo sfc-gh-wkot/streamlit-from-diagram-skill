@@ -1,0 +1,34 @@
+{
+  "name": "visual-validation",
+  "description": "Tests Phase 2 visual validation loop",
+  "grading": {
+    "pass_threshold": 1.0,
+    "partial_pass_threshold": 0.7,
+    "critical_behaviors": [
+      "Runs visual-validate.py with iteration number",
+      "Parses JSON output for improvements list"
+    ],
+    "scoring": {
+      "pass": "All expected behaviors observed",
+      "partial": ">=70% behaviors observed, all critical behaviors pass",
+      "fail": "Any critical behavior missing OR <70% behaviors observed"
+    }
+  },
+  "scenarios": [
+    {
+      "id": "validation-1",
+      "query": "validate visually",
+      "precondition": "Localhost app already running at 8501",
+      "expected_behavior": [
+        "Installs playwright if not present",
+        "Runs visual-validate.py with iteration number",
+        "Parses JSON output for improvements list",
+        "Implements each improvement in streamlit_app.py",
+        "Runs ruff after each modification",
+        "Runs up to 3 iterations maximum",
+        "Exits early if score >= 90% after iteration 2",
+        "Outputs final score and stops"
+      ]
+    }
+  ]
+}

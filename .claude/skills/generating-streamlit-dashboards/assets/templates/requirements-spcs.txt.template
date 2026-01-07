@@ -1,0 +1,6 @@
+# Raw SPCS - can use latest PyPI version
+# Check https://pypi.org/project/streamlit/ for latest
+streamlit>=1.51
+pandas
+numpy
+altair>=5.0

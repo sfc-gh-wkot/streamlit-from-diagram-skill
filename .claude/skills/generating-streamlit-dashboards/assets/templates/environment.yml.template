@@ -1,0 +1,16 @@
+# SiS Warehouse Runtime (Conda)
+# https://docs.snowflake.com/en/release-notes/streamlit-in-snowflake
+#
+# ⚠️ CRITICAL: Snowflake's Anaconda channel does NOT support version operators!
+# ❌ WRONG: streamlit>=1.51.0, pandas==2.0, numpy<2
+# ✅ CORRECT: streamlit, pandas, numpy (plain names only)
+#
+name: streamlit_env
+channels:
+  - snowflake  # MUST use snowflake channel (NOT conda-forge)
+dependencies:
+  # NO VERSION SPECIFIERS ALLOWED - Snowflake manages versions
+  - streamlit
+  - pandas
+  - numpy
+  - altair

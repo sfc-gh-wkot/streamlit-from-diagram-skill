@@ -1,0 +1,198 @@
+/*
+ * Dark Theme CSS
+ * 
+ * Apply to body or .stApp when dark mode is enabled.
+ * 
+ * Best practices from Numerro (https://www.numerro.io/blog/designing-dashboard-in-dark-mode):
+ * 1. Avoid pure black (#000000) - use dark gray instead
+ * 2. Use desaturated colors - reduces visual vibration
+ * 3. Limited contrasting colors - 4-5 max for focus
+ * 4. Prioritize visualizations over text
+ */
+
+/* ========== DARK MODE VARIABLES ========== */
+.dark-mode,
+[data-theme="dark"] {
+    /* Background layers (avoid pure black) */
+    --bg-primary: #1a1a2e;      /* Cards, containers */
+    --bg-secondary: #16213e;    /* Sidebar, panels */
+    --bg-tertiary: #0f3460;     /* Accent background */
+    --card-bg: #1f1f3d;         /* Card surfaces */
+    --hover-bg: #252550;        /* Hover states */
+    
+    /* Text - high contrast but not pure white */
+    --text-primary: #f5f5f5;    /* Off-white for main text */
+    --text-secondary: #a0a0b0;  /* Muted for secondary info */
+    --text-muted: #6a6a7a;      /* Tertiary/disabled */
+    
+    /* Borders - subtle, not harsh */
+    --border-color: #2a2a4a;
+    --border-hover: #3a3a6a;
+    
+    /* Accent colors - desaturated for dark backgrounds */
+    /* Use 4-5 contrasting colors max (Numerro recommendation) */
+    --accent-primary: #4A90D9;   /* Desaturated blue */
+    --accent-success: #5cb85c;   /* Desaturated green */
+    --accent-warning: #f0ad4e;   /* Desaturated orange */
+    --accent-danger: #d9534f;    /* Desaturated red */
+    --accent-info: #5bc0de;      /* Desaturated cyan */
+    
+    /* KPI highlights - brighter to draw focus */
+    --kpi-positive: #7dd87d;
+    --kpi-negative: #ff7b7b;
+}
+
+/* ========== MAIN APP BACKGROUND ========== */
+.dark-mode .stApp,
+[data-theme="dark"] .stApp {
+    background: linear-gradient(135deg, var(--bg-primary) 0%, #0d0d1a 100%) !important;
+}
+
+/* ========== SIDEBAR ========== */
+.dark-mode [data-testid="stSidebar"],
+[data-theme="dark"] [data-testid="stSidebar"] {
+    background: var(--bg-secondary) !important;
+    border-right: 1px solid var(--border-color) !important;
+}
+
+.dark-mode [data-testid="stSidebar"] *,
+[data-theme="dark"] [data-testid="stSidebar"] * {
+    color: var(--text-primary) !important;
+}
+
+/* ========== CARDS ========== */
+.dark-mode .sidebar-card,
+.dark-mode .metric-card,
+.dark-mode .insight-card,
+[data-theme="dark"] .sidebar-card,
+[data-theme="dark"] .metric-card,
+[data-theme="dark"] .insight-card {
+    background: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-primary) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+.dark-mode .sidebar-card:hover,
+.dark-mode .metric-card:hover,
+[data-theme="dark"] .sidebar-card:hover,
+[data-theme="dark"] .metric-card:hover {
+    background: var(--hover-bg) !important;
+    border-color: var(--accent-primary) !important;
+    box-shadow: 0 6px 16px rgba(74, 144, 217, 0.2) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* ========== TEXT ========== */
+.dark-mode h1, .dark-mode h2, .dark-mode h3,
+[data-theme="dark"] h1, [data-theme="dark"] h2, [data-theme="dark"] h3 {
+    color: var(--text-primary) !important;
+}
+
+.dark-mode h4, .dark-mode h5, .dark-mode h6,
+[data-theme="dark"] h4, [data-theme="dark"] h5, [data-theme="dark"] h6 {
+    color: var(--text-secondary) !important;
+}
+
+.dark-mode p, .dark-mode span, .dark-mode label,
+[data-theme="dark"] p, [data-theme="dark"] span, [data-theme="dark"] label {
+    color: var(--text-secondary) !important;
+}
+
+/* ========== METRICS (need aggressive nested targeting) ========== */
+.dark-mode [data-testid="stMetric"],
+.dark-mode [data-testid="stMetric"] > div,
+.dark-mode [data-testid="stMetric"] > div > div,
+.dark-mode [data-testid="stMetric"] > div > div > div,
+[data-theme="dark"] [data-testid="stMetric"],
+[data-theme="dark"] [data-testid="stMetric"] > div,
+[data-theme="dark"] [data-testid="stMetric"] > div > div,
+[data-theme="dark"] [data-testid="stMetric"] > div > div > div {
+    background: var(--bg-primary) !important;
+    background-color: var(--bg-primary) !important;
+}
+
+.dark-mode [data-testid="stMetricValue"],
+[data-theme="dark"] [data-testid="stMetricValue"] {
+    color: var(--text-primary) !important;
+    font-weight: 600 !important;
+}
+
+.dark-mode [data-testid="stMetricDelta"],
+[data-theme="dark"] [data-testid="stMetricDelta"] {
+    color: var(--kpi-positive) !important;
+}
+
+/* ========== WIDGETS (BaseWeb components) ========== */
+.dark-mode .stSelectbox > div,
+.dark-mode .stTextInput > div,
+.dark-mode .stNumberInput > div,
+[data-theme="dark"] .stSelectbox > div,
+[data-theme="dark"] .stTextInput > div,
+[data-theme="dark"] .stNumberInput > div {
+    background: var(--bg-tertiary) !important;
+    border-color: var(--border-color) !important;
+}
+
+.dark-mode [data-baseweb="textarea"],
+.dark-mode [data-baseweb="textarea"] textarea,
+.dark-mode [data-baseweb="base-input"],
+.dark-mode [data-baseweb="input"] input,
+[data-theme="dark"] [data-baseweb="textarea"],
+[data-theme="dark"] [data-baseweb="textarea"] textarea,
+[data-theme="dark"] [data-baseweb="base-input"],
+[data-theme="dark"] [data-baseweb="input"] input {
+    background: var(--bg-primary) !important;
+    background-color: var(--bg-primary) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-primary) !important;
+}
+
+/* ========== CHARTS (transparent so Altair theme shows) ========== */
+.dark-mode .vega-embed,
+.dark-mode [data-testid="stVegaLiteChart"],
+[data-theme="dark"] .vega-embed,
+[data-theme="dark"] [data-testid="stVegaLiteChart"] {
+    background: transparent !important;
+}
+
+/* ========== CUSTOM HTML ELEMENTS ========== */
+.dark-mode .top-navbar,
+[data-theme="dark"] .top-navbar {
+    background: var(--bg-primary) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+.dark-mode .icon-nav-header,
+.dark-mode .icon-nav,
+[data-theme="dark"] .icon-nav-header,
+[data-theme="dark"] .icon-nav {
+    background: var(--bg-primary) !important;
+}
+
+.dark-mode .tiles-panel,
+[data-theme="dark"] .tiles-panel {
+    background: var(--bg-secondary) !important;
+    border-left: 1px solid var(--border-color) !important;
+}
+
+/* ========== BUTTONS ========== */
+.dark-mode .stButton > button,
+[data-theme="dark"] .stButton > button {
+    background: var(--accent-primary) !important;
+    color: var(--text-primary) !important;
+    border: none !important;
+}
+
+.dark-mode .stButton > button:hover,
+[data-theme="dark"] .stButton > button:hover {
+    background: #5a9fe9 !important;
+    box-shadow: 0 4px 12px rgba(74, 144, 217, 0.4) !important;
+}
+
+/* ========== EXPANDERS ========== */
+.dark-mode [data-testid="stExpander"],
+[data-theme="dark"] [data-testid="stExpander"] {
+    background: var(--bg-primary) !important;
+    border-color: var(--border-color) !important;
+}

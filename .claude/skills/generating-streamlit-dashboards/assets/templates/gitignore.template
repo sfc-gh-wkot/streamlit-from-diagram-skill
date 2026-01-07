@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+.venv/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# 🔐 CREDENTIALS - NEVER COMMIT THESE
+.env
+.env.*
+*.env
+.streamlit/secrets.toml
+secrets.toml
+.snowflake-token
+*.token
+*.pat
+**/credentials.json
+**/service_account*.json
+
+# Snowflake
+# ⚠️ ~/.snowflake/config.toml contains credentials - keep in home dir only
+private_key*.pem
+*.p8
+*.p12
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Visual validation artifacts
+.screenshot_iter_*.png
+.validation_iter_*.json

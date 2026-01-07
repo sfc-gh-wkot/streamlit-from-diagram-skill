@@ -1,0 +1,33 @@
+# Snowflake CLI Project Definition
+# ⚠️ CRITICAL: Always include database and schema in identifier
+# Usage: snow streamlit deploy app_warehouse --connection <conn>
+
+definition_version: 2
+entities:
+  # SiS Warehouse - use `snow streamlit deploy`
+  app_warehouse:
+    type: streamlit
+    identifier:
+      name: APP_NAME_YYYY_MM_DD_HH_MM  # Replace with actual timestamp (underscores!)
+      database: STREAMLIT_APPS         # ⚠️ REQUIRED - create if not exists
+      schema: PUBLIC                   # ⚠️ REQUIRED
+    title: "YYYY_MM_DD_HH_MM App Title (Warehouse)"  # Timestamp prefix for Snowsight
+    query_warehouse: COMPUTE_WH
+    main_file: streamlit_app.py
+    artifacts:
+      - streamlit_app.py
+      - environment.yml
+
+# NOTE: SiS Container CANNOT be deployed via snowflake.yml
+# Must use SQL with COMPUTE_POOL parameter instead:
+#
+# snow stage copy streamlit_app.py @STAGE/app/ -c <conn> --overwrite
+# snow stage copy requirements.txt @STAGE/app/ -c <conn> --overwrite
+# snow sql -c <conn> -q "
+#   CREATE OR REPLACE STREAMLIT DB.SCHEMA.APP_NAME_YYYY_MM_DD_HH_MM
+#     FROM '@STAGE/app/'
+#     MAIN_FILE = 'streamlit_app.py'
+#     TITLE = 'YYYY_MM_DD_HH_MM App Title (Container)'
+#     QUERY_WAREHOUSE = SYSTEM\$STREAMLIT_NOTEBOOK_WH
+#     COMPUTE_POOL = SYSTEM_COMPUTE_POOL_CPU;
+# "

@@ -1,0 +1,47 @@
+{
+  "name": "basic-localhost",
+  "description": "Tests Phase 1 localhost generation from wireframe",
+  "grading": {
+    "pass_threshold": 1.0,
+    "partial_pass_threshold": 0.7,
+    "critical_behaviors": [
+      "Creates .gitignore before any other files",
+      "Outputs localhost URL and STOPS (does not auto-deploy)"
+    ],
+    "scoring": {
+      "pass": "All expected behaviors observed",
+      "partial": ">=70% behaviors observed, all critical behaviors pass",
+      "fail": "Any critical behavior missing OR <70% behaviors observed"
+    }
+  },
+  "scenarios": [
+    {
+      "id": "basic-1",
+      "query": "Create a dashboard from this wireframe",
+      "files": ["assets/example-wireframe.png"],
+      "expected_behavior": [
+        "Creates .gitignore before any other files",
+        "Analyzes wireframe edges for navigation elements",
+        "Generates streamlit_app.py with Altair charts (not st.bar_chart)",
+        "Uses explicit colors in all charts",
+        "Generates pyproject.toml with uv dependencies",
+        "Runs ruff check --fix && ruff format",
+        "Starts app with uv run streamlit run",
+        "Verifies health at localhost:8501/_stcore/health",
+        "Commits to git with descriptive message",
+        "Outputs localhost URL and STOPS (does not auto-deploy)"
+      ]
+    },
+    {
+      "id": "basic-2",
+      "query": "Build a Streamlit app from this screenshot",
+      "files": ["assets/example-wireframe.png"],
+      "expected_behavior": [
+        "Recognizes screenshot as input (not just wireframe)",
+        "Extracts visual elements and recreates them",
+        "Generates meaningful content (not placeholder text)",
+        "Follows same Phase 1 workflow as wireframe"
+      ]
+    }
+  ]
+}

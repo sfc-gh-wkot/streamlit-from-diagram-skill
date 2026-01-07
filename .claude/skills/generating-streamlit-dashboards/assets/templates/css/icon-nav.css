@@ -1,0 +1,105 @@
+/*
+ * Left Icon Navigation CSS
+ * 
+ * Creates a fixed vertical icon bar on the left edge of the screen.
+ * Use with assets/html/icon-nav.html
+ */
+
+/* Icon Nav Header (top-left corner with logo) */
+.icon-nav-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 48px;
+    height: 56px;
+    background: var(--bg-primary, #ffffff);
+    border-bottom: 1px solid var(--border-color, #e5e5e5);
+    border-right: 1px solid var(--border-color, #e5e5e5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999999;
+}
+
+.nav-logo {
+    width: 28px;
+    height: 28px;
+    border: 2px solid var(--text-primary, #1a1a1a);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text-primary, #1a1a1a);
+}
+
+/* Left Icon Navigation Bar */
+.icon-nav {
+    position: fixed;
+    left: 0;
+    top: 56px;
+    bottom: 0;
+    width: 48px;
+    background: var(--bg-primary, #ffffff);
+    border-right: 1px solid var(--border-color, #e5e5e5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 16px;
+    gap: 8px;
+    z-index: 999998;
+}
+
+/* Individual Icon Item */
+.icon-nav-item {
+    width: 32px;
+    height: 32px;
+    border: 2px solid #d0d0d0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    background: transparent;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+/* Active state */
+.icon-nav-item.active {
+    border-color: var(--accent-primary, #2196f3);
+    background: #e3f2fd;
+    box-shadow: 0 0 8px rgba(33, 150, 243, 0.4);
+}
+
+/* Hover state */
+.icon-nav-item:hover {
+    border-color: var(--accent-primary, #2196f3);
+    transform: scale(1.05);
+}
+
+/* Click feedback */
+.icon-nav-item:active {
+    transform: scale(0.95);
+    background: #bbdefb;
+}
+
+/* Dark mode adjustments */
+.dark-mode .icon-nav-header,
+.dark-mode .icon-nav {
+    background: var(--bg-primary, #1a1a2e);
+}
+
+.dark-mode .nav-logo {
+    border-color: var(--text-primary, #ffffff);
+    color: var(--text-primary, #ffffff);
+}
+
+.dark-mode .icon-nav-item {
+    border-color: #4a4a6a;
+}
+
+.dark-mode .icon-nav-item.active {
+    background: rgba(33, 150, 243, 0.2);
+}

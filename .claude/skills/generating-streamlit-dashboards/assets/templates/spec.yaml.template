@@ -1,0 +1,49 @@
+# SPCS Service Specification
+# NOTE: For reference/documentation only.
+# When creating service, inline this spec in SQL (see below).
+#
+# Service name should include timestamp: app_name_YYYY_MM_DD_HH_MM
+
+spec:
+  containers:
+    - name: streamlit
+      image: /DB/SCHEMA/REPO/app:latest  # Or use :YYYY_MM_DD_HH_MM tag
+      readinessProbe:
+        port: 8501
+        path: /_stcore/health
+      resources:
+        requests:
+          memory: 512Mi   # Reduced to avoid capacity issues
+          cpu: 0.25
+        limits:
+          memory: 1Gi
+          cpu: 0.5
+  endpoints:
+    - name: streamlit
+      port: 8501
+      public: true
+
+# CREATE SERVICE SQL (inline spec):
+#
+# CREATE SERVICE DB.SCHEMA.MY_SERVICE_YYYY_MM_DD_HH_MM
+#   IN COMPUTE POOL MY_COMPUTE_POOL
+#   FROM SPECIFICATION $$
+# spec:
+#   containers:
+#     - name: streamlit
+#       image: /DB/SCHEMA/REPO/app:YYYY_MM_DD_HH_MM
+#       readinessProbe:
+#         port: 8501
+#         path: /_stcore/health
+#       resources:
+#         requests:
+#           memory: 512Mi
+#           cpu: 0.25
+#         limits:
+#           memory: 1Gi
+#           cpu: 0.5
+#   endpoints:
+#     - name: streamlit
+#       port: 8501
+#       public: true
+# $$;

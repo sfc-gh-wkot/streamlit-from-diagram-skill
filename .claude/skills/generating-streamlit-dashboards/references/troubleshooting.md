@@ -1,5 +1,70 @@
 # Troubleshooting Guide
 
+## Contents
+
+- [Skill Failure Modes](#skill-failure-modes)
+- [All Environments](#all-environments)
+- [Localhost Issues](#localhost-issues)
+- [SiS Warehouse Issues](#sis-warehouse-issues)
+- [SiS Container Issues](#sis-container-issues)
+- [Raw SPCS Issues](#raw-spcs-issues)
+- [Debugging Commands](#debugging-commands)
+
+---
+
+## Skill Failure Modes
+
+Common ways the skill can fail and how to fix them.
+
+### Deployment Without Explicit Request
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| Creates deployment files during Phase 1 | Misinterpreted "can deploy to X" as deployment request | Only trigger Phase 3 on explicit "deploy to snowflake/sis/spcs" |
+| Auto-deploys after localhost | Didn't STOP after Phase 1 | Ensure skill outputs localhost URL and STOPS |
+
+### Missing Visual Elements
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| No left icon navigation | Didn't scan left edge of wireframe | Run Edge Scan Protocol - check for circles on left |
+| No right tiles panel | Didn't scan right edge | Check for "Tiles" label or vertical bar on right |
+| Missing navbar | Didn't scan top edge | Check for logo/search/profile at top |
+
+### Placeholder Content
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| Cards say "Predictive Item" | Skipped content generation | Transform EVERY placeholder to specific content |
+| Charts have no titles | Missed chart title requirement | Add `st.markdown("**Title**")` before each chart |
+| Generic button text | Used wireframe labels literally | Generate contextual action text |
+
+### Wrong File Order
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| Credentials committed | Created files before .gitignore | ALWAYS create .gitignore FIRST |
+| Deployment files in Phase 1 | Created environment.yml/requirements.txt too early | Only `streamlit_app.py` + `pyproject.toml` in Phase 1 |
+
+### Validation Loop Issues
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| Runs forever | Didn't check iteration count | Maximum 3 iterations, early exit at 90% |
+| Doesn't parse improvements | Not reading JSON output | Parse `improvements` array from script output |
+| Playwright errors | Missing installation | Run `uv pip install playwright && uv run playwright install chromium` |
+
+### Color Inconsistency
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| Charts have different colors | Used `st.bar_chart()` | Use Altair with explicit `color="#4A90D9"` |
+| Theme looks wrong in SiS | Used external fonts | Use system fonts only (CSP blocks external) |
+
+---
+
+---
+
 ## Common Issues by Environment
 
 ### All Environments

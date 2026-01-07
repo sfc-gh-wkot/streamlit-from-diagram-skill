@@ -1,0 +1,68 @@
+<!--
+  Right Panel HTML Template
+  
+  Contains: Metrics, AI Suggestions, Prompt Input, Activity Feed
+  
+  Usage in streamlit_app.py:
+    with right_col:
+        # Metric Cards
+        st.markdown('''<div class="stat-card">...</div>''', unsafe_allow_html=True)
+        
+        # AI Suggestions
+        st.markdown("**AI SUGGESTIONS**")
+        st.button("✦ Optimize ad spend", use_container_width=True)
+        
+        # Prompt Input
+        st.text_area("", placeholder="Ask about your data...")
+        st.button("▷ Run", type="primary", use_container_width=True)
+-->
+
+<!-- Metric Card 1 -->
+<div class="stat-card">
+    <div class="stat-label">TODAY'S VISITORS</div>
+    <div class="stat-value">1,247</div>
+    <div class="stat-delta positive">↑ 12% vs yesterday</div>
+</div>
+
+<!-- Metric Card 2 -->
+<div class="stat-card">
+    <div class="stat-label">PENDING TASKS</div>
+    <div class="stat-value">23</div>
+    <div class="stat-delta warning">5 due today</div>
+</div>
+
+<!-- Metric Card 3 -->
+<div class="stat-card">
+    <div class="stat-label">CONVERSION RATE</div>
+    <div class="stat-value">3.24%</div>
+    <div class="stat-delta positive">↑ 0.5% vs last week</div>
+</div>
+
+<!--
+  Use Streamlit buttons for AI Suggestions:
+  
+  st.markdown("---")
+  st.markdown("**AI SUGGESTIONS**")
+  if st.button("✦ Optimize ad spend", use_container_width=True):
+      st.toast("Analyzing ad spend patterns...")
+  if st.button("✦ Review churn users", use_container_width=True):
+      st.toast("Loading churn analysis...")
+  if st.button("✦ Export Q4 report", use_container_width=True):
+      st.toast("Generating report...")
+  
+  st.markdown("---")
+  st.markdown("**Enter Prompt**")
+  user_prompt = st.text_area("", placeholder="Ask about your data...", height=80, label_visibility="collapsed")
+  if st.button("▷ Run", type="primary", use_container_width=True):
+      if user_prompt:
+          st.toast(f"Processing: {user_prompt[:30]}...")
+  
+  st.markdown("---")
+  with st.expander("Recent Activity", expanded=False):
+      st.markdown('''
+      📊 **Report generated** • 2m ago  
+      👤 **New user signup** • 15m ago  
+      💰 **Payment received** • 1h ago  
+      🔔 **Alert resolved** • 2h ago
+      ''')
+-->

@@ -1,0 +1,60 @@
+{
+  "name": "edge-cases",
+  "description": "Tests edge detection and complex layouts",
+  "grading": {
+    "pass_threshold": 1.0,
+    "partial_pass_threshold": 0.7,
+    "critical_behaviors": [
+      "Each card has specific content (not 'Predictive Item')"
+    ],
+    "scoring": {
+      "pass": "All expected behaviors observed",
+      "partial": ">=70% behaviors observed, all critical behaviors pass",
+      "fail": "Any critical behavior missing OR <70% behaviors observed"
+    }
+  },
+  "scenarios": [
+    {
+      "id": "edge-1",
+      "query": "Create dashboard from this wireframe",
+      "files": ["assets/example-wireframe.png"],
+      "expected_behavior": [
+        "Detects circles on left edge as icon navigation",
+        "Generates icon-nav HTML with 4-5 circular icons",
+        "Applies CSS positioning for fixed left nav"
+      ]
+    },
+    {
+      "id": "edge-2",
+      "query": "Build this dashboard",
+      "files": ["assets/example-wireframe.png"],
+      "expected_behavior": [
+        "Detects 'Tiles' or vertical bar on right edge",
+        "Generates tiles-panel HTML with collapse arrow",
+        "Positions panel at right edge with fixed positioning"
+      ]
+    },
+    {
+      "id": "edge-3",
+      "query": "Create this dashboard with sidebar cards",
+      "files": ["assets/example-wireframe.png"],
+      "expected_behavior": [
+        "Counts exact number of sidebar cards in wireframe",
+        "Generates that many unique insight cards",
+        "Each card has specific content (not 'Predictive Item')",
+        "Cards have icons, titles, metrics, and action text"
+      ]
+    },
+    {
+      "id": "edge-4",
+      "query": "Recreate this dark mode dashboard",
+      "files": ["assets/example-wireframe.png"],
+      "expected_behavior": [
+        "Detects dark theme in screenshot",
+        "Uses st.checkbox for dark mode toggle (not st.toggle)",
+        "Registers custom Altair dark theme",
+        "Uses appropriate dark background colors"
+      ]
+    }
+  ]
+}

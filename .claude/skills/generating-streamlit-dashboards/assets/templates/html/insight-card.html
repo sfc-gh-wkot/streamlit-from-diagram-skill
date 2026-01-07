@@ -1,0 +1,72 @@
+<!--
+  Sidebar Insight Card HTML Template
+  
+  Usage in streamlit_app.py:
+    st.markdown('''
+      <div class="insight-card">
+          <div class="card-header">
+              <div class="card-icon" style="background: #2196F3;">📈</div>
+              <div class="card-title">Revenue Forecast</div>
+          </div>
+          <div class="card-content">
+              <div class="card-metric">Q4 projection: $128K</div>
+              <div class="card-action positive">↑ 23% vs last quarter</div>
+          </div>
+      </div>
+    ''', unsafe_allow_html=True)
+    st.button("View Details", key="revenue", use_container_width=True)
+  
+  Status colors:
+    - #2196F3 (blue) - Info/Analytics
+    - #FF9800 (orange) - Warning/Alert
+    - #4CAF50 (green) - Success/Growth
+    - #E91E63 (pink) - Anomaly/Critical
+-->
+
+<!-- Example Card 1: Revenue Forecast -->
+<div class="insight-card">
+    <div class="card-header">
+        <div class="card-icon" style="background: #2196F3;">📈</div>
+        <div class="card-title">Revenue Forecast</div>
+    </div>
+    <div class="card-content">
+        <div class="card-metric">Q4 projection: $128K</div>
+        <div class="card-action positive">↑ 23% vs last quarter</div>
+    </div>
+</div>
+
+<!-- Example Card 2: Churn Risk Alert -->
+<div class="insight-card">
+    <div class="card-header">
+        <div class="card-icon" style="background: #FF9800;">⚠️</div>
+        <div class="card-title">Churn Risk Alert</div>
+    </div>
+    <div class="card-content">
+        <div class="card-metric">47 users at high risk</div>
+        <div class="card-action warning">Action needed this week</div>
+    </div>
+</div>
+
+<!-- Example Card 3: Growth Opportunity -->
+<div class="insight-card">
+    <div class="card-header">
+        <div class="card-icon" style="background: #4CAF50;">🎯</div>
+        <div class="card-title">Growth Opportunity</div>
+    </div>
+    <div class="card-content">
+        <div class="card-metric">Enterprise segment: +18%</div>
+        <div class="card-action positive">12 leads ready to convert</div>
+    </div>
+</div>
+
+<!-- Example Card 4: Anomaly Detected -->
+<div class="insight-card">
+    <div class="card-header">
+        <div class="card-icon" style="background: #E91E63;">🔍</div>
+        <div class="card-title">Anomaly Detected</div>
+    </div>
+    <div class="card-content">
+        <div class="card-metric">Traffic spike: +340%</div>
+        <div class="card-action">Source: Social campaign</div>
+    </div>
+</div>
