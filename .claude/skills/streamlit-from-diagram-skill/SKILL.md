@@ -451,16 +451,66 @@ chmod 600 ~/.snowflake/.snowflake-token
 cat ~/.snowflake/.snowflake-token  # NEVER DO THIS
 ```
 
+**Auto-Discovery: Find PAT Token:**
+
+```bash
+# Search common locations for .env with PAT token
+for path in ".env" "../.env" "../../.env" "$HOME/.env" "$HOME/.snowflake/.env"; do
+  if [ -f "$path" ] && grep -qE "^SNOWFLAKE_PAT=" "$path" 2>/dev/null; then
+    echo "✅ Found PAT at: $path"
+    ENV_PATH="$path"
+    break
+  fi
+done
+
+# If not found, ask user
+if [ -z "$ENV_PATH" ]; then
+  echo "❌ No .env with SNOWFLAKE_PAT found. Please create one."
+fi
+```
+
 **Extracting PAT from .env to .snowflake-token:**
 
 ```bash
-# ✅ SAFE - Extract without displaying token content
-grep -E "^(SNOWFLAKE_TOKEN|PAT_TOKEN|SNOWFLAKE_PAT)=" .env \
+# ✅ SAFE - Extract without displaying token content (uses discovered path)
+grep -E "^SNOWFLAKE_PAT=" "${ENV_PATH:-.env}" \
   | head -1 | cut -d'=' -f2- > .snowflake-token
 chmod 600 .snowflake-token
 
 # Verify (size only, not content)
 echo "Token file: $(wc -c < .snowflake-token) bytes"
+```
+
+**Auto-Setup Connection (if not exists):**
+
+```bash
+# Variables from user prompt or .env
+ACCOUNT="xxx-yyy"           # From prompt: "account: xxx-yyy"
+USER="myuser"               # From prompt: "user: myuser"
+CONN_NAME="${ACCOUNT}_${USER}"  # Auto-generated connection name
+
+# Check if connection already exists
+if snow connection list 2>/dev/null | grep -q "$CONN_NAME"; then
+  echo "✅ Connection '$CONN_NAME' already exists"
+else
+  echo "Creating connection '$CONN_NAME'..."
+
+  # Add to config.toml (non-interactive)
+  mkdir -p ~/.snowflake
+  cat >> ~/.snowflake/config.toml << EOF
+
+[connections.$CONN_NAME]
+account = "$ACCOUNT"
+user = "$USER"
+authenticator = "PROGRAMMATIC_ACCESS_TOKEN"
+token_file_path = "$(pwd)/.snowflake-token"
+EOF
+
+  echo "✅ Connection '$CONN_NAME' created"
+fi
+
+# Test the connection
+snow connection test -c "$CONN_NAME"
 ```
 
 **Verify .gitignore Before Deployment:**
@@ -2962,6 +3012,9 @@ altair
 ```
 
 ### snowflake.yml
+
+**⚠️ CRITICAL: Always include database and schema in identifier to avoid deployment failures.**
+
 ```yaml
 definition_version: 2
 entities:
@@ -2970,6 +3023,8 @@ entities:
     type: streamlit
     identifier:
       name: APP_NAME_2026_01_07_14_30  # Underscores, not hyphens!
+      database: STREAMLIT_APPS         # ⚠️ REQUIRED - create if not exists
+      schema: PUBLIC                   # ⚠️ REQUIRED
     title: "2026_01_07_14_30 App Title (Warehouse)"  # Timestamp prefix for Snowsight!
     query_warehouse: COMPUTE_WH
     main_file: streamlit_app.py
@@ -2979,6 +3034,11 @@ entities:
 
 # NOTE: SiS Container CANNOT be deployed via snowflake.yml
 # Must use SQL with COMPUTE_POOL parameter instead
+```
+
+**Pre-deployment: Ensure database exists:**
+```bash
+snow sql -c <conn> -q "CREATE DATABASE IF NOT EXISTS STREAMLIT_APPS"
 ```
 
 ### spcs/Dockerfile
@@ -3050,11 +3110,11 @@ spec:
         path: /_stcore/health
       resources:
         requests:
+          memory: 512Mi   # ⚠️ Reduced to avoid capacity issues
+          cpu: 0.25
+        limits:
           memory: 1Gi
           cpu: 0.5
-        limits:
-          memory: 2Gi
-          cpu: 1
   endpoints:
     - name: streamlit
       port: 8501
@@ -3075,11 +3135,11 @@ spec:
         path: /_stcore/health
       resources:
         requests:
+          memory: 512Mi
+          cpu: 0.25
+        limits:
           memory: 1Gi
           cpu: 0.5
-        limits:
-          memory: 2Gi
-          cpu: 1
   endpoints:
     - name: streamlit
       port: 8501
@@ -3092,11 +3152,35 @@ $$;
 After `CREATE SERVICE`, the container starts immediately but the **public endpoint takes 2-5 minutes** to provision:
 
 ```bash
-# Check endpoint status (poll until URL appears)
+# Simple check
 snow sql -c <conn> -q "SHOW ENDPOINTS IN SERVICE DB.SCHEMA.MY_SERVICE;"
+```
 
-# Initially shows: "Endpoints provisioning in progress..."
-# After 2-5 min: Returns actual URL like "mchrhd-xxx.snowflakecomputing.app"
+**Automated polling loop (waits for endpoint):**
+```bash
+SERVICE="DB.SCHEMA.MY_SERVICE"
+CONN="your_connection"
+
+echo "⏳ Waiting for SPCS endpoint (typically 2-5 minutes)..."
+for i in {1..30}; do
+  # Get endpoint URL from SHOW ENDPOINTS
+  RESULT=$(snow sql -c "$CONN" -q "SHOW ENDPOINTS IN SERVICE $SERVICE" --format json 2>/dev/null)
+
+  # Check if we got a real URL (not "provisioning")
+  if echo "$RESULT" | grep -q "snowflakecomputing.app"; then
+    URL=$(echo "$RESULT" | grep -o '"ingress_url":"[^"]*"' | cut -d'"' -f4)
+    echo "✅ Endpoint ready: https://$URL"
+    break
+  fi
+
+  echo "  Still provisioning... ($i/30, ~$((i*10))s elapsed)"
+  sleep 10
+done
+
+if [ -z "$URL" ]; then
+  echo "❌ Endpoint not ready after 5 minutes. Check service status:"
+  echo "   snow sql -c $CONN -q \"DESCRIBE SERVICE $SERVICE\""
+fi
 ```
 
 ### SPCS Troubleshooting: "No service hosts found"
@@ -3127,6 +3211,37 @@ SHOW ENDPOINTS IN SERVICE MY_SERVICE;
 | Container crashed | Check logs for Python errors |
 | Compute pool suspended | `ALTER COMPUTE POOL MY_POOL RESUME;` |
 | Endpoint provisioning | Wait 2-5 min after service starts |
+| Insufficient CPU resources | Reduce resource requests or use different pool |
+
+### SPCS Troubleshooting: "Insufficient CPU resources"
+
+**If service fails with:** `insufficient CPU resources to schedule all service instances`
+
+**Cause:** Compute pool at capacity - requested resources exceed available.
+
+**Solutions:**
+
+1. **Reduce resource requests** (recommended):
+```yaml
+resources:
+  requests:
+    memory: 512Mi  # Reduced from 1Gi
+    cpu: 0.25      # Reduced from 0.5
+```
+
+2. **Use a different compute pool:**
+```sql
+-- Check pool capacity
+SELECT * FROM TABLE(SYSTEM$GET_COMPUTE_POOL_STATUS('MY_POOL'));
+
+-- Try a different pool
+CREATE SERVICE ... IN COMPUTE POOL DIFFERENT_POOL ...
+```
+
+3. **Scale up the compute pool:**
+```sql
+ALTER COMPUTE POOL MY_POOL SET MAX_NODES = 3;
+```
 
 **See `references/troubleshooting.md` for detailed diagnosis steps.**
 

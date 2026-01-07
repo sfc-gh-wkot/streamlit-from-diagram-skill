@@ -1,4 +1,6 @@
 # SPCS Service Specification
+# ⚠️ NOTE: This file is for reference only - spec must be inlined in SQL
+# Resource requests reduced to avoid capacity issues
 spec:
   containers:
     - name: streamlit
@@ -11,11 +13,11 @@ spec:
         path: /_stcore/health
       resources:
         requests:
+          memory: 512Mi  # Reduced to avoid capacity issues
+          cpu: 0.25
+        limits:
           memory: 1Gi
           cpu: 0.5
-        limits:
-          memory: 2Gi
-          cpu: 1
   endpoints:
     - name: streamlit
       port: 8501

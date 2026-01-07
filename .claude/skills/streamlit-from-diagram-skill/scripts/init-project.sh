@@ -94,11 +94,11 @@ spec:
         path: /_stcore/health
       resources:
         requests:
+          memory: 512Mi
+          cpu: 0.25
+        limits:
           memory: 1Gi
           cpu: 0.5
-        limits:
-          memory: 2Gi
-          cpu: 1
   endpoints:
     - name: streamlit
       port: 8501

@@ -218,6 +218,42 @@ CREATE SERVICE my_service
   FROM SPECIFICATION $$...$$;
 ```
 
+#### Issue: "Insufficient CPU resources"
+
+**Symptom:**
+```
+insufficient CPU resources to schedule all service instances
+```
+
+**Cause:** Compute pool at capacity - requested resources exceed available nodes.
+
+**Solutions:**
+
+1. **Reduce resource requests** (recommended):
+```yaml
+resources:
+  requests:
+    memory: 512Mi  # Reduced from 1Gi
+    cpu: 0.25      # Reduced from 0.5
+  limits:
+    memory: 1Gi
+    cpu: 0.5
+```
+
+2. **Check pool capacity:**
+```sql
+SELECT * FROM TABLE(SYSTEM$GET_COMPUTE_POOL_STATUS('MY_POOL'));
+```
+
+3. **Use a different pool or scale up:**
+```sql
+-- Scale up existing pool
+ALTER COMPUTE POOL MY_POOL SET MAX_NODES = 3;
+
+-- Or use a different pool
+CREATE SERVICE ... IN COMPUTE POOL DIFFERENT_POOL ...
+```
+
 ---
 
 ## Debugging Commands

@@ -3,6 +3,8 @@
 #
 # ⚠️ IMPORTANT: Add timestamp to BOTH name AND title for easy identification in Snowsight
 # Example: name: APP_NAME_2026_01_07_14_30, title: "2026_01_07_14_30 App Title (Warehouse)"
+#
+# ⚠️ IMPORTANT: Always include database and schema in identifier to avoid deployment failures
 
 definition_version: 2
 
@@ -11,9 +13,14 @@ entities:
     type: streamlit
     identifier:
       name: APP_NAME  # Add timestamp suffix: APP_NAME_YYYY_MM_DD_HH_MM
+      database: STREAMLIT_APPS  # ⚠️ REQUIRED - create if not exists
+      schema: PUBLIC            # ⚠️ REQUIRED
     title: "App Title (Warehouse)"  # Add timestamp prefix: "YYYY_MM_DD_HH_MM App Title (Warehouse)"
     query_warehouse: COMPUTE_WH
     main_file: streamlit_app.py
     artifacts:
       - streamlit_app.py
       - environment.yml
+
+# Pre-deployment: Ensure database exists
+# snow sql -c <conn> -q "CREATE DATABASE IF NOT EXISTS STREAMLIT_APPS"
