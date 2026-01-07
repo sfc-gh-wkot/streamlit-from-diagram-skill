@@ -98,6 +98,51 @@ Files that MUST be in .gitignore:
 
 ---
 
+## 🔐 CRITICAL: SNOWFLAKE DATABASE SAFETY - DO NO HARM
+
+**Deploying a dashboard to Snowflake must NEVER cause harm to the environment.**
+
+**🚨 ABSOLUTE RULES:**
+1. **NEVER read other user databases** - Only access databases/schemas explicitly needed for the dashboard
+2. **NEVER modify other user databases** - No DROP, DELETE, UPDATE, INSERT on existing user data
+3. **NEVER list or explore user databases** - Don't run `SHOW DATABASES` to "see what's available"
+4. **Reading Snowflake system databases is OK** - `SNOWFLAKE` database (account usage, etc.) is allowed
+5. **Confine changes to dashboard needs only** - Only create objects the dashboard requires
+
+**✅ ALLOWED operations:**
+```sql
+-- Creating dashboard-specific objects
+CREATE DATABASE IF NOT EXISTS MY_DASHBOARD_DB;
+CREATE SCHEMA IF NOT EXISTS MY_DASHBOARD_DB.APP_SCHEMA;
+CREATE STAGE IF NOT EXISTS ...;
+CREATE STREAMLIT ...;
+CREATE SERVICE ...;
+
+-- Reading Snowflake system info
+SELECT * FROM SNOWFLAKE.ACCOUNT_USAGE.QUERY_HISTORY;
+SHOW WAREHOUSES;
+SHOW COMPUTE POOLS;
+```
+
+**❌ FORBIDDEN operations:**
+```sql
+-- Reading/exploring user data
+SHOW DATABASES;  -- Don't explore what databases exist
+SELECT * FROM OTHER_DB.SCHEMA.TABLE;  -- Don't read user data
+USE DATABASE PRODUCTION_DB;  -- Don't access other databases
+
+-- Modifying anything outside dashboard scope
+DROP DATABASE ...;
+DROP TABLE ...;
+DELETE FROM ...;
+UPDATE ... SET ...;
+TRUNCATE TABLE ...;
+```
+
+**🛡️ SAFETY PRINCIPLE:** If in doubt, DON'T DO IT. Ask the user first.
+
+---
+
 # Streamlit from Image Skill
 
 Based on the given image/screenshot, generate a very similarly looking, fully working Streamlit mock application.
