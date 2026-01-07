@@ -1,11 +1,20 @@
 # SPCS (Snowpark Container Services) Setup Guide
 
-## Prerequisites
+## ⚠️ Raw SPCS vs SiS Container
+
+**This guide is for Raw SPCS (CREATE SERVICE).** For SiS Container (CREATE STREAMLIT), use system resources instead:
+
+| Deployment | Compute Pool | Warehouse |
+|------------|--------------|-----------|
+| **SiS Container** | `SYSTEM_COMPUTE_POOL_CPU` ✅ | `SYSTEM$STREAMLIT_NOTEBOOK_WH` ✅ |
+| **Raw SPCS** | Custom pool required | N/A |
+
+## Prerequisites (Raw SPCS Only)
 
 Before deploying a raw SPCS service, ensure:
 
 1. **Account Permissions** - SPCS enabled, CREATE COMPUTE POOL and CREATE SERVICE privileges
-2. **Infrastructure** - Image repository and compute pool created
+2. **Infrastructure** - Image repository and **custom** compute pool created
 3. **Local Tools** - Docker Desktop and Snowflake CLI (`snow`) installed
 
 ## One-Time Setup (SQL)
@@ -17,7 +26,9 @@ CREATE IMAGE REPOSITORY IF NOT EXISTS my_db.my_schema.my_repo;
 -- 2. Show repository URL (needed for docker push)
 SHOW IMAGE REPOSITORIES;
 
--- 3. Create compute pool (REQUIRED - cannot use SYSTEM_COMPUTE_POOL_CPU)
+-- 3. Create compute pool (REQUIRED for raw SPCS - SYSTEM_COMPUTE_POOL_CPU won't work)
+-- ⚠️ Note: SYSTEM_COMPUTE_POOL_CPU works for SiS Container (CREATE STREAMLIT)
+--          but NOT for raw SPCS (CREATE SERVICE)
 CREATE COMPUTE POOL IF NOT EXISTS my_compute_pool
   MIN_NODES = 1
   MAX_NODES = 2

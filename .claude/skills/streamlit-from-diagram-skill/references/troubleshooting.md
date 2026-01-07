@@ -188,21 +188,34 @@ SPCS only supports image for amd64 architecture
 docker build --platform linux/amd64 -t image:tag .
 ```
 
-#### Issue: Compute pool type incompatible
+#### Issue: Compute pool type incompatible (Raw SPCS only)
 
 **Symptom:**
 ```
 Compute pool SYSTEM_COMPUTE_POOL_CPU can only support services of type [NOTEBOOK, MODEL_SERVING, STREAMLIT, ML_JOB]
 ```
 
-**Cause:** System compute pools are restricted. Raw SPCS services need custom pools.
+**Cause:** `SYSTEM_COMPUTE_POOL_CPU` supports STREAMLIT apps (SiS Container) but NOT raw SPCS services (CREATE SERVICE).
 
-**Solution:** Create dedicated compute pool:
+**For SiS Container (CREATE STREAMLIT):** ✅ Use `SYSTEM_COMPUTE_POOL_CPU`:
 ```sql
+CREATE STREAMLIT my_app
+  FROM '@stage/'
+  MAIN_FILE = 'streamlit_app.py'
+  COMPUTE_POOL = SYSTEM_COMPUTE_POOL_CPU;  -- ✅ Works for STREAMLIT
+```
+
+**For Raw SPCS (CREATE SERVICE):** ❌ Must create custom compute pool:
+```sql
+-- System pool doesn't work for CREATE SERVICE
 CREATE COMPUTE POOL my_compute_pool
   MIN_NODES = 1
   MAX_NODES = 2
   INSTANCE_FAMILY = CPU_X64_XS;
+
+CREATE SERVICE my_service
+  IN COMPUTE POOL my_compute_pool  -- Custom pool required
+  FROM SPECIFICATION $$...$$;
 ```
 
 ---

@@ -1,11 +1,16 @@
--- SPCS Infrastructure Setup
+-- SPCS Infrastructure Setup (Raw SPCS / CREATE SERVICE only)
 -- Replace: MY_DB, MY_SCHEMA, MY_REPO, MY_POOL
+--
+-- ⚠️ NOTE: This setup is for RAW SPCS (CREATE SERVICE) only.
+-- For SiS Container (CREATE STREAMLIT), use system resources:
+--   COMPUTE_POOL = SYSTEM_COMPUTE_POOL_CPU
+--   QUERY_WAREHOUSE = SYSTEM$STREAMLIT_NOTEBOOK_WH
 
 -- 1. Create image repository
 CREATE IMAGE REPOSITORY IF NOT EXISTS MY_DB.MY_SCHEMA.MY_REPO;
 SHOW IMAGE REPOSITORIES;
 
--- 2. Create compute pool (REQUIRED - cannot use SYSTEM_COMPUTE_POOL_CPU)
+-- 2. Create compute pool (REQUIRED for raw SPCS - SYSTEM_COMPUTE_POOL_CPU won't work for CREATE SERVICE)
 CREATE COMPUTE POOL IF NOT EXISTS MY_POOL
   MIN_NODES = 1
   MAX_NODES = 2

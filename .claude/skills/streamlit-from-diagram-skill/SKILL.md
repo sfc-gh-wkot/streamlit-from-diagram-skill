@@ -2327,6 +2327,7 @@ snow streamlit deploy app_warehouse --connection <conn> --replace
 # 2. SiS Container (MUST use SQL - snow CLI doesn't support runtime field)
 # ⚠️ NO EXTERNAL_ACCESS_INTEGRATIONS needed for demo dashboards
 # ⚠️ NO RUNTIME_NAME needed - just specify COMPUTE_POOL
+# ✅ PREFER system resources: SYSTEM_COMPUTE_POOL_CPU, SYSTEM$STREAMLIT_NOTEBOOK_WH
 snow stage copy streamlit_app.py @STAGE/app/ -c <conn> --overwrite
 snow stage copy requirements.txt @STAGE/app/ -c <conn> --overwrite
 snow sql -c <conn> -q "
@@ -2334,8 +2335,8 @@ snow sql -c <conn> -q "
     FROM '@STAGE/app/'
     MAIN_FILE = 'streamlit_app.py'
     TITLE = '${TIMESTAMP} App Title (Container)'
-    QUERY_WAREHOUSE = COMPUTE_WH
-    COMPUTE_POOL = MY_COMPUTE_POOL;
+    QUERY_WAREHOUSE = SYSTEM\$STREAMLIT_NOTEBOOK_WH
+    COMPUTE_POOL = SYSTEM_COMPUTE_POOL_CPU;
 "
 
 # 3. Raw SPCS (Docker + snow CLI)
@@ -2563,7 +2564,7 @@ snow sql -c <conn> -q "CREATE STREAMLIT ... COMPUTE_POOL = <pool>;"
 
 **Cause:** `RUNTIME_NAME = 'CONTAINER'` is not a valid parameter.
 
-**Fix:** Omit `RUNTIME_NAME`, just specify `COMPUTE_POOL`:
+**Fix:** Omit `RUNTIME_NAME`, just specify `COMPUTE_POOL`. **Prefer system resources:**
 ```sql
 -- ❌ WRONG
 CREATE STREAMLIT app
@@ -2571,12 +2572,12 @@ CREATE STREAMLIT app
   RUNTIME_NAME = 'CONTAINER'
   COMPUTE_POOL = my_pool;
 
--- ✅ CORRECT
+-- ✅ CORRECT - Use system compute pool and warehouse
 CREATE STREAMLIT app
   FROM '@stage/'
   MAIN_FILE = 'streamlit_app.py'
-  QUERY_WAREHOUSE = COMPUTE_WH
-  COMPUTE_POOL = my_pool;
+  QUERY_WAREHOUSE = SYSTEM$STREAMLIT_NOTEBOOK_WH
+  COMPUTE_POOL = SYSTEM_COMPUTE_POOL_CPU;
 ```
 
 ---
@@ -2826,6 +2827,28 @@ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 3. **No `EXTERNAL_ACCESS_INTEGRATIONS`** - Not needed for demo dashboards
 4. **No BCR checks** - Not applicable for Streamlit apps
 5. **Use `st.checkbox()`** - `st.toggle()` may not be available
+
+### ✅ Prefer System Resources (Avoid Capacity Issues)
+
+**Always prefer system compute pools and warehouses to avoid capacity/quota issues:**
+
+| Resource Type | Prefer (System) | Avoid (Custom) |
+|---------------|-----------------|----------------|
+| **Compute Pool** | `SYSTEM_COMPUTE_POOL_CPU` | Custom pools (quota limits) |
+| **Warehouse** | `SYSTEM$STREAMLIT_NOTEBOOK_WH` or `COMPUTE_WH` | Custom warehouses |
+
+**SiS Container deployment (use system resources):**
+```sql
+CREATE OR REPLACE STREAMLIT DB.SCHEMA.MY_APP
+  FROM '@STAGE/app/'
+  MAIN_FILE = 'streamlit_app.py'
+  TITLE = 'My Dashboard (Container)'
+  QUERY_WAREHOUSE = SYSTEM$STREAMLIT_NOTEBOOK_WH
+  COMPUTE_POOL = SYSTEM_COMPUTE_POOL_CPU;
+```
+
+**Note:** `SYSTEM_COMPUTE_POOL_CPU` supports STREAMLIT apps but NOT raw SPCS services.
+For raw SPCS (CREATE SERVICE), you still need a custom compute pool.
 
 ## Version Strategy
 
