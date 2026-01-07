@@ -1,28 +1,29 @@
 ---
 name: streamlit-snowflake-from-image
 description: |
-  Generates Streamlit dashboards from wireframes/screenshots. Fast by default.
-  
-  ⚡ DEFAULT: FAST GENERATION (~2 min)
+  Generates Streamlit dashboards from wireframes/screenshots.
+
+  🔴 LOCALHOST FIRST - Snowflake deployment ONLY on explicit request.
+
+  ⚡ DEFAULT BEHAVIOR (~2 min):
   1. Analyze wireframe thoroughly
-  2. Generate LOCALHOST FILES ONLY:
-     - streamlit_app.py (main app)
-     - pyproject.toml (uv dependencies)
-  3. Run linting (ruff check streamlit_app.py --fix && ruff format streamlit_app.py)
-  4. Start app locally (uv) in background
-  5. ✅ LOCALHOST READY - App running at http://localhost:8501
-  
-  🔄 OPTIONAL: VISUAL VALIDATION (user must request)
-  - Trigger: "use visual validation" or "validate visually"
-  - Adds: Playwright screenshots + iterative refinement loop
-  
-  🔒 OPTIONAL: SNOWFLAKE DEPLOYMENT (user must request)
-  - Trigger: "deploy to snowflake"
-  - Generates: environment.yml, requirements.txt, snowflake.yml, spcs/
-  
-  ⚠️ DO NOT run visual validation unless user explicitly requests it.
-  ⚠️ DO NOT generate Snowflake files until user requests deployment.
-version: 1.19.0
+  2. Generate LOCALHOST FILES ONLY (streamlit_app.py, pyproject.toml)
+  3. Lint with ruff, start app locally with uv
+  4. ✅ LOCALHOST READY at http://localhost:8501
+  5. 🛑 STOP HERE - Wait for user's next instruction
+
+  ⚠️ CRITICAL: User saying "can be deployed to X, Y, Z" means CAPABILITY.
+  It is NOT a request to deploy. Only deploy to localhost by default.
+
+  🔒 SNOWFLAKE DEPLOYMENT - ONLY when user explicitly says:
+  - "deploy to snowflake" → All 3 Snowflake environments
+  - "deploy to sis warehouse" → SiS Warehouse only
+  - "deploy to sis container" → SiS Container only
+  - "deploy to spcs" → SPCS only
+
+  📋 TODO LIST: Only include localhost tasks by default.
+  NEVER add Snowflake deployment TODOs unless user requests deployment.
+version: 1.20.0
 ---
 
 ## 🎭 Persona: Expert Streamlit Dashboard Developer
@@ -99,12 +100,38 @@ Files that MUST be in .gitignore:
 
 # Streamlit from Image Skill
 
-Based on the given image/screenshot, generate a very similarly looking, fully working Streamlit mock application that is fully deployable and working in 4 deployments:
+Based on the given image/screenshot, generate a very similarly looking, fully working Streamlit mock application.
 
+**🔴 CRITICAL: LOCALHOST FIRST, SNOWFLAKE ONLY ON REQUEST**
+
+This skill generates code that IS CAPABLE of running in 4 environments:
 1. **Streamlit localhost** — Local development with uv
 2. **SiS Warehouse** — Streamlit in Snowflake (Warehouse runtime)
 3. **SiS Container** — Streamlit in Snowflake (Container runtime)
 4. **Streamlit on SPCS** — Custom Docker on Snowpark Container Services
+
+**⚠️ BUT: By default, ONLY deploy to localhost. Snowflake deployment requires explicit user request.**
+
+---
+
+## 🚨 UNDERSTANDING USER PROMPTS
+
+**When user says:** "Create a dashboard that can be deployed to localhost, SiS, and SPCS"
+- **Meaning:** Generate code COMPATIBLE with these environments
+- **Action:** Deploy to LOCALHOST ONLY, then STOP and wait
+
+**When user says:** "Deploy to Snowflake" or "Deploy to SiS" or "Deploy to SPCS"
+- **Meaning:** NOW deploy to Snowflake environments
+- **Action:** Generate deployment files and deploy
+
+**Example prompt interpretation:**
+```
+"Create a Streamlit dashboard from this screenshot that can be deployed
+to localhost, SiS Warehouse, SiS Container, and SPCS"
+
+✅ CORRECT interpretation: Deploy to localhost only
+❌ WRONG interpretation: Deploy to all 4 environments
+```
 
 ---
 
@@ -166,6 +193,46 @@ This is the DEFAULT behavior. No visual validation unless explicitly requested.
 
 ---
 
+### 📋 TODO LIST GENERATION RULES
+
+**🔴 CRITICAL: Your TODO list determines what you will execute. Be very careful!**
+
+**DEFAULT TODO (localhost only):**
+```
+☐ Initialize git repo with credential-protected .gitignore
+☐ Analyze wireframe and generate streamlit_app.py
+☐ Generate pyproject.toml for localhost
+☐ Lint and format with ruff
+☐ Start localhost and verify health
+☐ Initial git commit
+✅ STOP HERE - Output localhost URL and wait for user
+```
+
+**🚫 NEVER add these TODOs automatically:**
+```
+❌ Configure Snowflake connection with PAT
+❌ Generate deployment files (environment.yml, requirements.txt, snowflake.yml, spcs/)
+❌ Deploy to SiS Warehouse
+❌ Deploy to SiS Container
+❌ Deploy to SPCS
+```
+
+**Add Snowflake TODOs ONLY when user explicitly says:**
+- "deploy to snowflake" → Add all Snowflake deployment TODOs
+- "deploy to sis" or "deploy to sis warehouse" → Add SiS Warehouse TODO only
+- "deploy to container" or "deploy to sis container" → Add SiS Container TODO only
+- "deploy to spcs" → Add SPCS TODO only
+
+**⚠️ User mentioning environments in prompt ≠ deployment request:**
+```
+"Create dashboard that can be deployed to localhost, SiS, SPCS"
+                        ^^^
+This means CAPABILITY, not a request to deploy.
+→ TODO should only include localhost steps.
+```
+
+---
+
 ### 🔄 OPTIONAL: VISUAL VALIDATION MODE (~3-4 minutes total)
 
 **TRIGGER:** User says "use visual validation", "validate visually", or similar.
@@ -205,38 +272,66 @@ Only run this when explicitly requested:
 
 ### 🔒 OPTIONAL: SNOWFLAKE DEPLOYMENT
 
-**TRIGGER:** User says "deploy to snowflake" or similar.
+**🔴 ONLY triggered when user EXPLICITLY requests deployment.**
 
-Only generate deployment files when explicitly requested:
+**Trigger phrases:**
+- "deploy to snowflake" → Deploy to all 3 Snowflake environments
+- "deploy to sis warehouse" → Deploy to SiS Warehouse only
+- "deploy to sis container" → Deploy to SiS Container only
+- "deploy to spcs" → Deploy to SPCS only
+
+**⚠️ NOT a trigger:** User mentioning environments in initial prompt (e.g., "can be deployed to...")
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│  SNOWFLAKE DEPLOYMENT (ONLY WHEN USER REQUESTS)                      │
+│  SNOWFLAKE DEPLOYMENT (ONLY WHEN USER EXPLICITLY REQUESTS)           │
 ├─────────────────────────────────────────────────────────────────────┤
-│  TRIGGER: User says "deploy to snowflake" or similar                │
-│                                                                     │
-│  8a. PRE-DEPLOYMENT VALIDATION (MANDATORY):                          │
+│  STEP 1: VALIDATE PAT TOKEN IN .env (MANDATORY)                      │
 │      ┌─────────────────────────────────────────────────────────┐    │
-│      │ 1. Check snow CLI installed: `snow --version`           │    │
-│      │ 2. Check connection exists: `snow connection list`      │    │
-│      │ 3. Test connection: `snow connection test -c <conn>`    │    │
-│      │ 4. If fails → ASK USER FOR HELP (see below)             │    │
+│      │ Check .env file exists and contains PAT token:          │    │
+│      │                                                          │    │
+│      │ # Verify .env has token (don't read the actual value!)  │    │
+│      │ grep -q "^SNOWFLAKE_PAT=" .env && echo "PAT found"      │    │
+│      │                                                          │    │
+│      │ If .env missing or no PAT → STOP and ask user:          │    │
+│      │ "Please create .env with SNOWFLAKE_PAT=<your-token>"    │    │
 │      └─────────────────────────────────────────────────────────┘    │
 │                                                                     │
-│  8b. GENERATE DEPLOYMENT FILES (not generated earlier):             │
+│  STEP 2: EXTRACT TOKEN TO .snowflake-token                          │
+│      ┌─────────────────────────────────────────────────────────┐    │
+│      │ grep -E "^SNOWFLAKE_PAT=" .env | cut -d'=' -f2- \       │    │
+│      │   > .snowflake-token && chmod 600 .snowflake-token      │    │
+│      └─────────────────────────────────────────────────────────┘    │
+│                                                                     │
+│  STEP 3: CONFIGURE SNOW CLI CONNECTION                              │
+│      ┌─────────────────────────────────────────────────────────┐    │
+│      │ Use account/user from prompt or ask user:                │    │
+│      │ snow connection add --connection-name <name> \           │    │
+│      │   --account <account> --user <user> \                    │    │
+│      │   --authenticator PROGRAMMATIC_ACCESS_TOKEN \            │    │
+│      │   --token-file-path $(pwd)/.snowflake-token              │    │
+│      └─────────────────────────────────────────────────────────┘    │
+│                                                                     │
+│  STEP 4: TEST CONNECTION (MANDATORY)                                │
+│      ┌─────────────────────────────────────────────────────────┐    │
+│      │ snow connection test -c <connection_name>                │    │
+│      │ If fails → STOP and ask user for help                   │    │
+│      └─────────────────────────────────────────────────────────┘    │
+│                                                                     │
+│  STEP 5: GENERATE DEPLOYMENT FILES (not generated earlier):         │
 │      ┌─────────────────────────────────────────────────────────┐    │
 │      │ • environment.yml    (SiS Warehouse - Conda)            │    │
 │      │ • requirements.txt   (SiS Container - pip)              │    │
 │      │ • snowflake.yml      (Snowflake CLI project definition) │    │
 │      │ • spcs/Dockerfile    (Raw SPCS container)               │    │
-│      │ • spcs/spec.yaml     (SPCS service spec)                │    │
+│      │ • spcs/spec.yaml     (SPCS service spec - reference)    │    │
 │      │ • spcs/requirements-spcs.txt                            │    │
 │      └─────────────────────────────────────────────────────────┘    │
 │                                                                     │
-│  8c. DEPLOY:                                                         │
-│      • Variant 2: SiS Warehouse  → snow streamlit deploy            │
-│      • Variant 3: SiS Container  → SQL (snow CLI doesn't support!)  │
-│      • Variant 4: Raw SPCS       → docker build + snow spcs         │
+│  STEP 6: DEPLOY:                                                     │
+│      • SiS Warehouse  → snow streamlit deploy                       │
+│      • SiS Container  → SQL (snow CLI doesn't support COMPUTE_POOL!)│
+│      • Raw SPCS       → docker build + inline SQL CREATE SERVICE    │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
