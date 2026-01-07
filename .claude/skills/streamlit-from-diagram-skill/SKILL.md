@@ -506,18 +506,19 @@ Files created:
 
 ### Snowflake Dashboard Naming Convention
 
-**ALWAYS add timestamp suffix to Snowflake dashboard names for easy identification.**
+**ALWAYS add timestamp to BOTH name AND title for easy identification in Snowsight.**
 
 **⚠️ CRITICAL: Use underscores, NOT hyphens — Snowflake identifiers don't allow hyphens.**
 
 ```
-Format: {APP_NAME}_{YYYY_MM_DD_HH_MM} ({Runtime})
+Name Format:  {APP_NAME}_{YYYY_MM_DD_HH_MM}
+Title Format: {YYYY_MM_DD_HH_MM} App Title ({Runtime})
 
-Examples:
-✅ PROPERTY_DASHBOARD_2026_01_07_14_30 (Warehouse)
-✅ PROPERTY_DASHBOARD_2026_01_07_14_30 (Container)
-✅ PROPERTY_DASHBOARD_2026_01_07_14_30 (SPCS)
-❌ PROPERTY_DASHBOARD_2026-01-07-14-30 (INVALID - hyphens not allowed)
+Examples (Name → Title):
+✅ PROPERTY_DASHBOARD_2026_01_07_14_30 → "2026_01_07_14_30 Property Dashboard (Warehouse)"
+✅ PROPERTY_DASHBOARD_2026_01_07_14_30 → "2026_01_07_14_30 Property Dashboard (Container)"
+✅ PROPERTY_DASHBOARD_2026_01_07_14_30 → "2026_01_07_14_30 Property Dashboard (SPCS)"
+❌ PROPERTY_DASHBOARD_2026-01-07-14-30 (INVALID - hyphens not allowed in names)
 ```
 
 **Generate timestamp at deployment time:**
@@ -525,6 +526,7 @@ Examples:
 from datetime import datetime
 timestamp = datetime.now().strftime("%Y_%m_%d_%H_%M")  # Underscores, not hyphens!
 app_name = f"PROPERTY_DASHBOARD_{timestamp}"
+app_title = f"{timestamp} Property Dashboard (Warehouse)"
 ```
 
 ```bash
@@ -534,9 +536,9 @@ TIMESTAMP=$(date +%Y_%m_%d_%H_%M)  # Underscores, not hyphens!
 
 | Variant | Name Pattern | Title Pattern |
 |---------|--------------|---------------|
-| SiS Warehouse | `APP_NAME_{timestamp}` | `"App Title (Warehouse)"` |
-| SiS Container | `APP_NAME_{timestamp}` | `"App Title (Container)"` |
-| Raw SPCS | `app_name_{timestamp}` | `"App Title (SPCS)"` |
+| SiS Warehouse | `APP_NAME_{timestamp}` | `"{timestamp} App Title (Warehouse)"` |
+| SiS Container | `APP_NAME_{timestamp}` | `"{timestamp} App Title (Container)"` |
+| Raw SPCS | `app_name_{timestamp}` | `"{timestamp} App Title (SPCS)"` |
 
 ### Modern Python Tooling Commands
 
@@ -2179,7 +2181,7 @@ snow sql -c <conn> -q "
   CREATE OR REPLACE STREAMLIT DB.SCHEMA.APP_NAME_${TIMESTAMP}
     FROM '@STAGE/app/'
     MAIN_FILE = 'streamlit_app.py'
-    TITLE = 'App Title (Container)'
+    TITLE = '${TIMESTAMP} App Title (Container)'
     QUERY_WAREHOUSE = COMPUTE_WH
     COMPUTE_POOL = MY_COMPUTE_POOL;
 "
@@ -2793,7 +2795,7 @@ entities:
     type: streamlit
     identifier:
       name: APP_NAME_2026_01_07_14_30  # Underscores, not hyphens!
-    title: "App Title (Warehouse)"      # Add (Warehouse) suffix!
+    title: "2026_01_07_14_30 App Title (Warehouse)"  # Timestamp prefix for Snowsight!
     query_warehouse: COMPUTE_WH
     main_file: streamlit_app.py
     artifacts:
