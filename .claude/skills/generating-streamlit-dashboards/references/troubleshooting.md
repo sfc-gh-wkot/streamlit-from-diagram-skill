@@ -2,13 +2,30 @@
 
 ## Contents
 
+- [Lessons from Common Failures](#lessons-from-common-failures)
 - [Skill Failure Modes](#skill-failure-modes)
+- [HTML Rendering Issues](#html-rendering-issues)
+- [CSS Rendering Issues](#css-rendering-issues)
 - [All Environments](#all-environments)
 - [Localhost Issues](#localhost-issues)
 - [SiS Warehouse Issues](#sis-warehouse-issues)
 - [SiS Container Issues](#sis-container-issues)
 - [Raw SPCS Issues](#raw-spcs-issues)
 - [Debugging Commands](#debugging-commands)
+
+---
+
+## Lessons from Common Failures
+
+Patterns that have caused issues in real usage — learn from these to avoid repeating them.
+
+| Failure Pattern | How It Manifests | Prevention |
+|-----------------|------------------|------------|
+| HTML form elements | Raw `<input>` shows as text | Use Streamlit native widgets or `<div>` mocks |
+| Placeholder content | Charts say "Value", cards say "Item" | Transform ALL placeholders to domain-specific content |
+| Missing chart labels | Axis shows column names like "order" | Always specify `title=` in Altair encoding |
+| Single monolithic file | 600+ line file, untestable | Use modular structure for dashboards >300 lines |
+| Unicode in HTML | Special characters break rendering | Use plain ASCII or HTML entities |
 
 ---
 
@@ -62,6 +79,56 @@ Common ways the skill can fail and how to fix them.
 | Theme looks wrong in SiS | Used external fonts | Use system fonts only (CSP blocks external) |
 
 ---
+
+## HTML Rendering Issues
+
+Streamlit's `st.markdown(unsafe_allow_html=True)` has a sanitizer that strips or breaks certain HTML patterns.
+
+| Issue | Cause | Fix |
+|-------|-------|-----|
+| Raw HTML displayed as text | `st.markdown` with `<input>`, `<textarea>`, `<button>` | Replace with `<div>` elements or use native Streamlit widgets |
+| HTML breaks after emoji | Unicode characters (▾, ◆, ▷) break sanitizer | Remove special Unicode, use HTML entities or plain text |
+| Multi-line HTML renders as text | Newlines in HTML string | Use single-line HTML or split into multiple `st.markdown()` calls |
+| HTML comments visible | `<!-- comments -->` not stripped cleanly | Remove all HTML comments from `st.markdown` content |
+
+**Common sanitized/stripped elements:**
+- `<input>`, `<textarea>`, `<select>`, `<button>` — Use Streamlit widgets instead
+- `<form>` — Use `st.form()` instead
+- `<script>`, `<iframe>` — Blocked for security
+- Event handlers (`onclick`, `onmouseover`) — Stripped
+
+**Working workaround for form-like UI:**
+```python
+# ❌ WRONG - Input elements stripped
+st.markdown('<input type="text" placeholder="Search...">', unsafe_allow_html=True)
+
+# ✅ CORRECT - Use div for visual mock, Streamlit for function
+st.markdown('<div class="search-box">🔍 Search...</div>', unsafe_allow_html=True)
+# Or use native widget:
+st.text_input("Search", placeholder="Search...", label_visibility="collapsed")
+```
+
+---
+
+## CSS Rendering Issues
+
+| Issue | Symptom | Fix |
+|-------|---------|-----|
+| Fixed position elements overlap | Navbar covers content | Add `padding-top` to main content container |
+| CSS not applied | Styles appear but don't render | Check for typos, ensure `unsafe_allow_html=True` |
+| Dark mode breaks layout | Colors inverted incorrectly | Use CSS variables or explicit color definitions |
+| Styles leak between components | Unintended inheritance | Use unique class prefixes (e.g., `.my-app-card`) |
+| CSS variables not working | `var(--color)` shows literally | Ensure CSS block with variables loads before usage |
+
+**CSS debugging pattern:**
+```python
+# Add visible border to debug layout issues
+st.markdown("""
+<style>
+.debug * { border: 1px solid red !important; }
+</style>
+""", unsafe_allow_html=True)
+```
 
 ---
 

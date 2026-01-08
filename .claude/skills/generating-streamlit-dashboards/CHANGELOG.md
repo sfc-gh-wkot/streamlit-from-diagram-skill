@@ -2,6 +2,98 @@
 
 All notable changes to this skill are documented in this file.
 
+## [2.6.1] - 2026-01-08
+
+### Added
+
+- **Code Quality Standards section** in SKILL.md - Prominent notice requiring:
+  - Modern Python (3.11+, type hints, f-strings)
+  - Modular code (separated concerns)
+  - Testable code (pure functions for data/charts)
+  - Easy to navigate (logical structure, clear comments)
+  - Easy to comprehend (descriptive names, docstrings)
+- Quick example showing good vs bad code patterns
+
+## [2.6.0] - 2026-01-08
+
+### Changed
+
+- **SKILL.md reduced from 563 lines (2,473 words) to 360 lines (1,401 words)** - Now within Anthropic's recommended <500 lines / 1,500-2,000 words
+- **Description rewritten in third-person with quoted trigger phrases** per Anthropic best practices:
+  - Positive: `"create dashboard from wireframe"`, `"convert this design to Streamlit"`, etc.
+  - Negative: `"debug my Streamlit app"`, `"fix this Streamlit error"`, etc.
+- **Writing style converted to imperative form** - Removed all second-person ("Use judgment" → "Select appropriate content")
+- **Removed duplicated Interactive Elements Pattern** - Now references `interactivity-patterns.md`
+- **Consolidated Quick Start Example** - Detailed tables moved to `content-requirements.md`
+
+### Added
+
+- **`references/content-requirements.md`** - Rich content requirements, transformation tables, sample data guidelines (extracted from SKILL.md)
+- **`references/testability.md`** - Testability guidelines, pure function patterns, test templates (extracted from SKILL.md)
+- **Model Loading Strategy table** in SKILL.md - Shows what each model (Haiku/Sonnet/Opus) should load upfront
+- **Enhanced `evaluations/README.md`** with:
+  - Example pass/partial/fail results
+  - Manual testing checklist
+  - New evaluation creation guide
+- **Enhanced `scripts/validate-compat.py` docstring** with usage examples and detected issues
+
+### Fixed
+
+- Removed content duplication between SKILL.md and reference files
+- All reference files now one level deep from SKILL.md (no nested references)
+
+### Compliance
+
+This version aligns with Anthropic Claude Code Skills best practices:
+- ✅ SKILL.md body under 500 lines
+- ✅ Third-person description with specific trigger phrases
+- ✅ Imperative/infinitive writing style throughout
+- ✅ Progressive disclosure with lean SKILL.md
+- ✅ References one level deep
+- ✅ At least 4 evaluations with grading rubrics
+- ✅ Scripts with clear documentation
+
+## [2.5.0] - 2026-01-08
+
+### Added
+
+- **`references/interactivity-patterns.md`** - New reference for session state, expandable cards, mock responses, chart interactivity
+- **`references/model-guidance.md`** - Extracted model-specific guidance (Haiku/Sonnet/Opus) from SKILL.md
+- **HTML Sanitization Rules** in troubleshooting.md - Documents Streamlit's HTML sanitizer behavior and workarounds
+- **CSS Rendering Issues** section in troubleshooting.md - Common CSS problems and fixes
+- **Lessons from Common Failures** section at top of troubleshooting.md - Quick reference table of failure patterns
+- **Modular Project Structure** section in workflow-details.md - Architecture for complex dashboards (>300 lines)
+- **Rich Content Requirements** checklist in SKILL.md - Minimum content requirements for UI elements
+- **Testability Guidelines** section in SKILL.md - Pure function patterns for testable code
+- **`@st.cache_data` pattern** in SKILL.md Must Use section
+- **"What Good Output Looks Like"** section in SKILL.md with 5 quality requirements:
+  - Sample Data (realistic numbers, not placeholders)
+  - Visible Labels (axis labels, titles, legends)
+  - Lightweight Interactivity (hover states, `.interactive()`)
+  - Sample Content (domain-specific, story-telling text)
+  - Mock Clickability (actionable buttons, AI suggestions, prompt input)
+- **Sidebar Card Transformations** table showing "Predictive Item" → rich content mappings
+- **KPI Card Transformations** table with specific formatting examples
+- **Chart Requirements** section with complete Altair example including title, axis labels, tooltips
+- **Right Panel Elements** table mapping tiles, AI suggestions, prompt input patterns
+- **Interactive Elements Pattern** code example for AI suggestion buttons and prompt input
+- Enhanced **Quick Start Example** with:
+  - Detailed wireframe-to-output transformation table
+  - Sample data requirements (formatted values, realistic variation)
+  - Extended success criteria checklist
+
+### Changed
+
+- **SKILL.md description** now uses explicit POSITIVE/NEGATIVE TRIGGERS format
+- **Model Compatibility Notes** moved to `references/model-guidance.md`, SKILL.md now has brief summary
+- **Must Avoid** section expanded with HTML sanitizer warnings (form elements, Unicode in HTML)
+- **Quick Reference table** updated with new reference files
+
+### Fixed
+
+- Documented HTML form element stripping that causes raw HTML to display as text
+- Documented Unicode character issues that break `st.markdown` rendering
+
 ## [2.4.0] - 2026-01-08
 
 ### Added

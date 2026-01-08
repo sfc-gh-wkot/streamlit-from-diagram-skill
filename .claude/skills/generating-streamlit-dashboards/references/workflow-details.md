@@ -397,3 +397,179 @@ Deployment Progress:
 - "deploy to warehouse" → SiS Warehouse only
 - "deploy to container" → SiS Container only
 - "deploy to spcs" → SPCS only
+
+---
+
+## Modular Project Structure (for Complex Dashboards)
+
+For dashboards exceeding ~300 lines, use a modular structure for maintainability and testability.
+
+### When to Use Modular Structure
+
+| Criteria | Single File | Modular Structure |
+|----------|-------------|-------------------|
+| Lines of code | <300 | >300 |
+| Number of charts | 1-3 | 4+ |
+| Team size | Solo | Multiple developers |
+| Need unit tests | No | Yes |
+| Reusable components | No | Yes |
+
+### Recommended Structure
+
+```
+project/
+├── streamlit_app.py      # Thin orchestration (~150 lines max)
+├── pyproject.toml
+├── src/
+│   ├── __init__.py
+│   ├── config.py         # Constants, mock data, colors
+│   ├── styles.py         # CSS strings
+│   ├── data/
+│   │   ├── __init__.py
+│   │   └── generators.py # Pure data generation (no st imports)
+│   ├── charts/
+│   │   ├── __init__.py
+│   │   └── analytics.py  # Pure Altair chart functions
+│   └── components/
+│       ├── __init__.py
+│       ├── navigation.py
+│       ├── sidebar.py
+│       ├── kpi_cards.py
+│       └── ai_assistant.py
+└── tests/
+    ├── __init__.py
+    ├── test_data_generators.py
+    └── test_charts.py
+```
+
+### Key Principles
+
+1. **Data/chart functions are pure (no Streamlit imports)** — Testable with pytest
+2. **Components contain Streamlit rendering logic** — Isolated side effects
+3. **Config centralizes constants** — Easy modification of colors, labels, mock data
+4. **Main file only orchestrates** — Imports and layout, minimal logic
+
+### Example: Pure Chart Function (Testable)
+
+```python
+# src/charts/analytics.py
+import altair as alt
+import pandas as pd
+
+CHART_COLORS = {"primary": "#4A90D9", "secondary": "#50C878"}
+
+def create_revenue_chart(df: pd.DataFrame) -> alt.Chart:
+    """Create revenue bar chart. Pure function, no Streamlit imports."""
+    return alt.Chart(df).mark_bar(color=CHART_COLORS["primary"]).encode(
+        x=alt.X("month:N", title="Month"),
+        y=alt.Y("revenue:Q", title="Revenue ($)", axis=alt.Axis(format="$,.0f")),
+        tooltip=[
+            alt.Tooltip("month:N", title="Month"),
+            alt.Tooltip("revenue:Q", title="Revenue", format="$,.0f")
+        ]
+    ).properties(height=300)
+```
+
+### Example: Component with Streamlit (Rendering)
+
+```python
+# src/components/kpi_cards.py
+import streamlit as st
+from src.config import COLORS
+
+def render_kpi_row(metrics: list[dict]):
+    """Render a row of KPI cards. Contains Streamlit logic."""
+    cols = st.columns(len(metrics))
+    for col, metric in zip(cols, metrics):
+        with col:
+            st.markdown(f"""
+            <div class="kpi-card" style="border-left: 4px solid {COLORS['primary']}">
+                <div class="kpi-label">{metric['label']}</div>
+                <div class="kpi-value">{metric['value']}</div>
+                <div class="kpi-delta {'positive' if metric['delta'] > 0 else 'negative'}">
+                    {'+' if metric['delta'] > 0 else ''}{metric['delta']}%
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+```
+
+### Example: Main Orchestration File
+
+```python
+# streamlit_app.py
+import streamlit as st
+from src.config import APP_TITLE, MOCK_DATA
+from src.styles import get_css
+from src.data.generators import generate_dashboard_data
+from src.charts.analytics import create_revenue_chart, create_trend_chart
+from src.components.navigation import render_sidebar
+from src.components.kpi_cards import render_kpi_row
+
+st.set_page_config(page_title=APP_TITLE, layout="wide")
+st.markdown(get_css(), unsafe_allow_html=True)
+
+# Load data (cached)
+@st.cache_data
+def load_data():
+    return generate_dashboard_data(seed=42)
+
+data = load_data()
+
+# Layout
+render_sidebar(data["navigation"])
+render_kpi_row(data["metrics"])
+
+col1, col2 = st.columns(2)
+with col1:
+    st.markdown("**Monthly Revenue**")
+    st.altair_chart(create_revenue_chart(data["revenue"]), use_container_width=True)
+with col2:
+    st.markdown("**Growth Trend**")
+    st.altair_chart(create_trend_chart(data["trends"]), use_container_width=True)
+```
+
+### Testing Pure Functions
+
+```python
+# tests/test_charts.py
+import pytest
+import pandas as pd
+import altair as alt
+from src.charts.analytics import create_revenue_chart
+
+@pytest.fixture
+def sample_revenue_data():
+    return pd.DataFrame({
+        "month": ["Jan", "Feb", "Mar"],
+        "revenue": [100000, 120000, 115000]
+    })
+
+def test_create_revenue_chart_returns_chart(sample_revenue_data):
+    result = create_revenue_chart(sample_revenue_data)
+    assert isinstance(result, alt.Chart)
+
+def test_create_revenue_chart_has_correct_mark(sample_revenue_data):
+    result = create_revenue_chart(sample_revenue_data)
+    assert result.mark == "bar" or hasattr(result.mark, "type")
+```
+
+### pyproject.toml for Modular Projects
+
+```toml
+[project]
+name = "my-dashboard"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "streamlit>=1.35",
+    "pandas>=2.0",
+    "altair>=5.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "ruff>=0.4"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+```

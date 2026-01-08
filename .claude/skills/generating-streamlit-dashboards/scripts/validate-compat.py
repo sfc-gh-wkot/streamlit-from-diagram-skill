@@ -1,5 +1,23 @@
 #!/usr/bin/env python3
-"""Validate Streamlit code for cross-environment compatibility."""
+"""
+Compatibility Validator for Streamlit Dashboards
+
+Checks Streamlit code for cross-environment compatibility issues,
+particularly for Snowflake SiS (Streamlit in Snowflake) deployments.
+
+Usage:
+    python validate-compat.py streamlit_app.py     # Single file
+    python validate-compat.py ./src                # Directory
+
+Output:
+    - ❌ ISSUES: Breaking problems that must be fixed
+    - ⚠️ WARNINGS: Potential problems to review
+
+Common issues detected:
+    - st.column_config (not supported in SiS Container)
+    - st.bar_chart/line_chart (colors vary, use Altair instead)
+    - Missing Altair imports
+"""
 
 import re
 import sys

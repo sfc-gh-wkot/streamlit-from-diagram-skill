@@ -1,10 +1,9 @@
 ---
 name: generating-streamlit-dashboards
 description: |
-  Generates production-ready Streamlit dashboards from wireframes, screenshots, mockups, or UI designs.
-  TRIGGERS: "create dashboard", "build app from wireframe", "convert design to Streamlit", "make this into a Streamlit app"
-  DOES NOT TRIGGER: general Streamlit questions, debugging existing apps, API help, modifying existing dashboards
-  Deploys to localhost by default; Snowflake deployment ONLY on explicit "deploy to snowflake/sis/spcs" request.
+  This skill should be used when the user asks to "create dashboard from wireframe", "convert this design to Streamlit", "build app from screenshot", "make this into a Streamlit app", or "turn this mockup into code". Transforms wireframes, screenshots, and UI designs into production-ready Streamlit dashboards with rich content, interactive charts, and professional styling.
+  
+  This skill should NOT be used when the user asks to "debug my Streamlit app", "how do I use st.columns", "modify the existing dashboard", "fix this Streamlit error", or "explain Streamlit". These requests require general Streamlit knowledge, not wireframe-to-code transformation.
 ---
 
 # Streamlit Dashboard from Image
@@ -20,43 +19,63 @@ Transform wireframes and screenshots into production-ready Streamlit dashboards.
 | Component mapping | `references/component-mapping.md` |
 | Layout patterns | `references/layout-patterns.md` |
 | CSS patterns | `references/css-patterns.md` |
+| Interactivity patterns | `references/interactivity-patterns.md` |
+| Content requirements | `references/content-requirements.md` |
+| Testability guidelines | `references/testability.md` |
 | Version compatibility | `references/version-matrix.md` |
 | Snowflake deployment | `references/snowflake-deployment.md` |
 | Security rules | `references/security-rules.md` |
 | Troubleshooting | `references/troubleshooting.md` |
+| Model-specific guidance | `references/model-guidance.md` |
 | CSS templates | `assets/templates/css/` |
 | HTML templates | `assets/templates/html/` |
 | Config templates | `assets/templates/` |
-| Example app | `references/examples/` |
 | Evaluations | `evaluations/` |
 
 ---
 
 ## Quick Start Example
 
-**Input:** User provides `wireframe.png` showing sidebar with 3 cards, main area with 2 charts, left icon nav
+**Input:** User provides `wireframe.png` showing:
+- Left icon navigation (4 circles)
+- Sidebar with 3 "Predictive Item" cards
+- Main area with "Page Title", 2 charts (bar + line)
+- Top navbar with "COMPANY | Property Name", Search, Profile
+- Right panel with tiles, "Try This" buttons, "Enter Prompt" input
 
 **Output:**
+
 ```
 project/
 ├── .gitignore           ← Created FIRST (credential protection)
-├── streamlit_app.py     ← 3 insight cards, 2 Altair charts, icon nav
+├── streamlit_app.py     ← Full implementation with rich content
 └── pyproject.toml       ← uv dependencies
 ```
 
+**Key Transformations:**
+
+| Wireframe Element | Transformed Output |
+|-------------------|-------------------|
+| "Predictive Item" boxes | **Revenue Forecast** ($128K, +23%), **Churn Risk Alert** (47 users), **Growth Opportunity** (+18%) |
+| Bar chart placeholder | **Monthly Revenue** — Altair bar chart with axis labels, tooltips |
+| Line chart placeholder | **Daily Trend** — Altair line chart with `.interactive()` |
+| "Try This" buttons | **AI SUGGESTIONS** — ✦ Optimize ad spend, ✦ Review churn users |
+| "Enter Prompt" + Run | Text input + "▷ Run" button with mock response |
+
+**Verification:** `curl -sf http://localhost:8501/_stcore/health` returns 200
+
 **Result:** App running at http://localhost:8501, git committed, STOP and wait for user.
 
-**What happens next:**
-- User says "validate visually" → Run visual validation loop (up to 3 iterations)
-- User says "deploy to snowflake" → Generate deployment files
-- User says nothing → Skill is complete
+See `references/content-requirements.md` for detailed transformation tables and sample data guidelines.
 
 ---
 
 ## Security (MANDATORY)
 
 ⚠️ **NEVER** read, echo, or commit credentials (passwords, tokens, .env files)
+
 ⚠️ **ALWAYS** create `.gitignore` FIRST before any other file operations
+
 ⚠️ **DO NO HARM** to user databases — CREATE only, never DROP/DELETE/UPDATE
 
 See `references/security-rules.md` for complete guidelines including safe token extraction.
@@ -70,15 +89,19 @@ This skill operates in three phases. See `references/workflow-details.md` for de
 ### Phase 1: Localhost (Default) [LOW FREEDOM]
 
 **Trigger:** User provides wireframe/screenshot
+
 **Duration:** ~2 minutes
+
 **Output:** Running app at http://localhost:8501
 
-⚠️ Create files in EXACT order: `.gitignore` → `streamlit_app.py` → `pyproject.toml`
+Create files in EXACT order: `.gitignore` → `streamlit_app.py` → `pyproject.toml`
 
 ### Phase 2: Visual Validation (Optional) [MEDIUM FREEDOM]
 
 **Trigger:** User says "validate visually"
+
 **Duration:** ~2-3 minutes
+
 **Output:** Score and improvements list
 
 Runs up to 3 iterations with early exit at 90%. Implement improvements as needed.
@@ -86,10 +109,12 @@ Runs up to 3 iterations with early exit at 90%. Implement improvements as needed
 ### Phase 3: Snowflake Deployment (Optional) [LOW FREEDOM]
 
 **Trigger:** User explicitly says "deploy to snowflake/sis/spcs"
+
 **Duration:** ~5 minutes
+
 **Output:** URLs for deployed environments
 
-⚠️ NOT triggered by: "can be deployed to X, Y, Z" (capability description)
+NOT triggered by: "can be deployed to X, Y, Z" (capability description)
 
 ---
 
@@ -105,16 +130,57 @@ Runs up to 3 iterations with early exit at 90%. Implement improvements as needed
 
 ## Wireframe Analysis Protocol [HIGH FREEDOM]
 
-See `references/workflow-details.md#phase-1-localhost-generation` for complete procedures.
+**Edge Scan Protocol (Often Missed):**
 
-**Quick checklist:**
-1. **Edge Scan** — Check all 4 edges for navigation elements (icons left, tiles right, navbar top)
-2. **Element Inventory** — Count exact number of cards, charts, metrics
-3. **Content Generation** — Transform ALL placeholders into specific, meaningful content
+1. **Left edge** — Circles/icons? → Icon navigation
+2. **Right edge** — "Tiles" or vertical bar? → Tiles panel
+3. **Top edge** — Logo/search/profile? → Navbar
+4. **Bottom edge** — Footer? → Footer section
 
-**NEVER use placeholder text.** Every "Predictive Item" becomes "Revenue Forecast", every box with lines becomes a real card with metrics.
+**Element Inventory:**
+- Count sidebar cards → Generate THAT many unique cards
+- Count charts → Generate THAT many with titles
+- Count metrics → Generate THAT many with values
 
-Use judgment to select appropriate content based on wireframe context (e.g., finance dashboard → revenue/costs, analytics → traffic/conversions).
+**CRITICAL:** Never use placeholder text. Every "Predictive Item" becomes "Revenue Forecast", every box with lines becomes a real card with metrics.
+
+Select appropriate content based on wireframe context (finance → revenue/costs, analytics → traffic/conversions).
+
+See `references/content-requirements.md` for complete transformation guidelines.
+
+---
+
+## Code Quality Standards (IMPORTANT)
+
+Generated Streamlit code MUST be:
+
+| Standard | Description |
+|----------|-------------|
+| **Modern Python** | Use Python 3.11+ features, type hints, f-strings, dataclasses where appropriate |
+| **Modular** | Separate concerns: data generation, chart creation, rendering logic |
+| **Testable** | Pure functions for data/charts (no `st.` imports), components for rendering |
+| **Easy to Navigate** | Logical file structure, clear section comments, consistent naming |
+| **Easy to Comprehend** | Descriptive variable names, docstrings on functions, no magic numbers |
+
+For dashboards >300 lines, use modular project structure. See `references/testability.md` for patterns.
+
+**Quick Example:**
+
+```python
+# ✅ Good: Modern, modular, testable
+def create_revenue_chart(df: pd.DataFrame, color: str = "#4A90D9") -> alt.Chart:
+    """Create revenue bar chart with tooltips."""
+    return alt.Chart(df).mark_bar(color=color).encode(
+        x=alt.X("month:N", title="Month"),
+        y=alt.Y("revenue:Q", title="Revenue ($)", axis=alt.Axis(format="$,.0f")),
+        tooltip=[alt.Tooltip("revenue:Q", format="$,.0f")]
+    ).interactive()
+
+# ❌ Bad: Monolithic, untestable, hard to follow
+def render():
+    st.markdown("**Revenue**")
+    st.altair_chart(alt.Chart(pd.DataFrame({"m":["Jan"],"r":[100]})).mark_bar()...)
+```
 
 ---
 
@@ -126,24 +192,23 @@ Use judgment to select appropriate content based on wireframe context (e.g., fin
 |------|---------|---------|
 | **uv** | Package management | `uv sync`, `uv run` |
 | **ruff** | Lint + format | `ruff check --fix && ruff format` |
-| **ty** | Type check (optional) | `ty check` |
 
 ### Must Use
 
 ```python
-# Altair with explicit colors
+# Cache data generation at app entry point
+@st.cache_data
+def load_data():
+    return generate_all_data(seed=42)
+
+data = load_data()
+
+# Altair with explicit colors, titles, tooltips
 alt.Chart(df).mark_bar(color="#4A90D9").encode(
     x=alt.X("month:N", title="Month"),
     y=alt.Y("value:Q", title="Revenue ($)"),
     tooltip=["month", alt.Tooltip("value:Q", format="$,.0f")]
-)
-
-# Charts always have titles
-st.markdown("**Monthly Revenue**")
-st.altair_chart(chart, use_container_width=True)
-
-# Pandas formatting for tables
-df["Revenue"] = df["Revenue"].apply(lambda x: f"${x:,}")
+).interactive()
 
 # st.checkbox for dark mode (SiS Container compatible)
 st.checkbox("Dark Mode", key="dark_mode")
@@ -152,30 +217,40 @@ st.checkbox("Dark Mode", key="dark_mode")
 ### Must Avoid
 
 ```python
-# st.column_config - breaks SiS Container
-# st.toggle() - may not be available
-# st.dataframe(hide_index=True) - not in older versions
-# st.bar_chart() - colors vary across environments
-# External fonts - blocked by CSP
-# Altair xOffset - requires Altair 5.0+
+# ❌ st.column_config - breaks SiS Container
+# ❌ st.toggle() - may not be available
+# ❌ st.dataframe(hide_index=True) - not in older versions
+# ❌ st.bar_chart() - colors vary across environments
+# ❌ External fonts - blocked by CSP
+# ❌ Altair xOffset - requires Altair 5.0+
 ```
 
 See `references/version-matrix.md` for full compatibility table.
 
 ---
 
+## Model Loading Strategy
+
+| Model | Load on Trigger | Load as Needed |
+|-------|-----------------|----------------|
+| **Haiku** | SKILL.md + workflow-details.md + chart-patterns.md | Other references |
+| **Sonnet** | SKILL.md | Navigate with grep patterns |
+| **Opus** | SKILL.md | Load references on-demand |
+
+For model-specific guidance, see `references/model-guidance.md`.
+
+---
+
 ## Finding Specific Patterns
 
-For large reference files, use grep:
+Navigate large reference files with grep:
 
 ```bash
 # Chart patterns
 grep -n "mark_bar\|mark_line\|mark_area" references/chart-patterns.md
-grep -n "Stacked\|Grouped\|Pie" references/chart-patterns.md
 
 # Deployment troubleshooting
 grep -n "Error\|Fix\|WRONG" references/snowflake-deployment.md
-grep -n "SiS Container" references/version-matrix.md
 
 # CSS patterns
 grep -n "icon-nav\|tiles-panel" assets/templates/css/*.css
@@ -190,14 +265,8 @@ The `scripts/visual-validate.py` script outputs JSON for parsing:
 ```json
 {
   "iteration": 1,
-  "score": 75,
   "score_percent": 75,
-  "improvements": [
-    "Add left icon navigation",
-    "Add chart titles",
-    "Add chart tooltips"
-  ],
-  "screenshot": "/path/to/.screenshot_iter_1.png",
+  "improvements": ["Add left icon navigation", "Add chart titles"],
   "continue_to_next": true,
   "early_exit": false
 }
@@ -223,6 +292,7 @@ The `scripts/visual-validate.py` script outputs JSON for parsing:
 | `validate-compat.py` | `python scripts/validate-compat.py streamlit_app.py` | SiS compatibility check |
 
 **Playwright install (required for visual-validate.py):**
+
 ```bash
 uv pip install playwright && uv run playwright install chromium
 ```
@@ -264,7 +334,7 @@ Templates available in `assets/templates/`.
 
 | Issue | Fix |
 |-------|-----|
-| Version specifiers in environment.yml | Remove `>=`, `==` - plain names only |
+| Version specifiers in environment.yml | Remove `>=`, `==` — plain names only |
 | `snow connection add` fails | Edit `~/.snowflake/config.toml` directly |
 | st.toggle() not available | Use `st.checkbox()` |
 | Altair xOffset not supported | Use `column` faceting |
@@ -276,7 +346,7 @@ See `references/troubleshooting.md` for detailed solutions.
 
 ## Testing This Skill
 
-To verify the skill is working correctly:
+Verify the skill works correctly:
 
 1. **Basic Test:** Provide `assets/example-wireframe.png` as input
    - Expected: Working localhost app at http://localhost:8501
@@ -291,7 +361,6 @@ To verify the skill is working correctly:
    ```bash
    python scripts/visual-validate.py . 1 --fast
    ```
-   - Expected: JSON output with score and improvements
 
 4. **Compatibility Check:**
    ```bash
@@ -323,20 +392,3 @@ Deployed to:
   - SiS Container: [URL]
   - SPCS: [URL]
 ```
-
----
-
-## Model Compatibility Notes
-
-| Model | Guidance | File Loading Strategy |
-|-------|----------|----------------------|
-| **Claude Haiku** | May need chart patterns copied into context | Load `chart-patterns.md` and `component-mapping.md` proactively; grep patterns may not be followed reliably |
-| **Claude Sonnet** | Works well with reference file navigation | Use grep patterns to find specific sections; load files on-demand |
-| **Claude Opus** | Can infer patterns from minimal examples | Rely on SKILL.md alone when possible; avoid loading verbose references unless needed |
-
-**Loading priority by phase:**
-- Phase 1: `workflow-details.md`, `component-mapping.md`
-- Phase 2: `chart-patterns.md` (for improvements)
-- Phase 3: `snowflake-deployment.md`, `security-rules.md`
-
-For all models: Keep context focused by loading only relevant reference files.
